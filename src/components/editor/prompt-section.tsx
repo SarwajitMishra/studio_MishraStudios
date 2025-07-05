@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Loader2, Sparkles, Upload, X } from "lucide-react";
@@ -15,12 +15,16 @@ interface PromptSectionProps {
   setIsLoading: (isLoading: boolean) => void;
   setVideoUrl: (url: string | null) => void;
   isLoading: boolean;
+  fileInputRef: React.RefObject<HTMLInputElement>;
+  onUploadClick: () => void;
 }
 
 export function PromptSection({
   setIsLoading,
   setVideoUrl,
   isLoading,
+  fileInputRef,
+  onUploadClick,
 }: PromptSectionProps) {
   const [prompt, setPrompt] = useState(
     "A majestic lion in the savanna at sunrise."
@@ -28,7 +32,6 @@ export function PromptSection({
   const [fileDataUri, setFileDataUri] = useState<string | null>(null);
   const [fileName, setFileName] = useState<string | null>(null);
 
-  const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -52,10 +55,10 @@ export function PromptSection({
   }
 
   const handleApplyPrompt = async () => {
-    if (!prompt) {
+    if (!prompt && !fileDataUri) {
       toast({
-        title: "Prompt is empty",
-        description: "Please enter a prompt.",
+        title: "Nothing to generate",
+        description: "Please enter a prompt or upload a file.",
         variant: "destructive",
       });
       return;
@@ -133,7 +136,7 @@ export function PromptSection({
             onChange={handleFileChange} 
             className="hidden" 
          />
-         <Button variant="outline" size="icon" onClick={() => fileInputRef.current?.click()} className="shrink-0">
+         <Button variant="outline" size="icon" onClick={onUploadClick} className="shrink-0">
             <Upload className="h-5 w-5"/>
             <span className="sr-only">Upload media</span>
          </Button>

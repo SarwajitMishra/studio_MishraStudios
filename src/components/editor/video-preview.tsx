@@ -11,23 +11,31 @@ import {
   Volume2,
   Maximize,
   Loader2,
+  Film,
+  Sparkles,
+  Upload,
 } from "lucide-react";
 
 interface VideoPreviewProps {
   videoUrl: string | null;
   isLoading: boolean;
+  onUploadClick: () => void;
 }
 
-export function VideoPreview({ videoUrl, isLoading }: VideoPreviewProps) {
+export function VideoPreview({
+  videoUrl,
+  isLoading,
+  onUploadClick,
+}: VideoPreviewProps) {
   const showPlaceholder = !videoUrl && !isLoading;
   const showLoadingState = isLoading;
   const showGeneratedVideo = videoUrl && !isLoading;
 
   return (
     <Card className="h-full shadow-md overflow-hidden">
-      <CardContent className="p-0 h-full flex flex-col bg-black">
+      <CardContent className="p-0 h-full flex flex-col bg-background">
         <div className="flex-1 relative flex items-center justify-center">
-          <AspectRatio ratio={16 / 9} className="w-full bg-muted">
+          <AspectRatio ratio={16 / 9} className="w-full">
             {showLoadingState && (
               <div className="w-full h-full flex flex-col items-center justify-center gap-4 text-primary-foreground">
                 <Loader2 className="w-12 h-12 animate-spin text-primary" />
@@ -41,13 +49,23 @@ export function VideoPreview({ videoUrl, isLoading }: VideoPreviewProps) {
             )}
 
             {showPlaceholder && (
-              <Image
-                src="https://placehold.co/1280x720.png"
-                alt="Video preview"
-                data-ai-hint="video still"
-                fill
-                className="object-contain"
-              />
+              <div className="w-full h-full flex flex-col items-center justify-center text-center gap-4 p-8 bg-card text-card-foreground">
+                <div className="relative">
+                  <Film className="w-24 h-24 text-primary" />
+                  <Sparkles className="absolute -top-2 -right-2 w-8 h-8 text-primary" />
+                  <Sparkles className="absolute bottom-12 -left-2 w-6 h-6 text-primary opacity-70" />
+                </div>
+                <h2 className="text-3xl font-bold mt-2">
+                  Start Creating with Mishra Studios
+                </h2>
+                <p className="text-lg text-muted-foreground max-w-md">
+                  Upload a video or enter a prompt to begin editing magic.
+                </p>
+                <Button size="lg" className="mt-2" onClick={onUploadClick}>
+                  <Upload className="mr-2 h-5 w-5" />
+                  Upload a Video
+                </Button>
+              </div>
             )}
 
             {showGeneratedVideo && (
@@ -62,49 +80,75 @@ export function VideoPreview({ videoUrl, isLoading }: VideoPreviewProps) {
           </AspectRatio>
 
           {/* Controls Overlay */}
-          <div className="absolute bottom-0 left-0 right-0 p-3 bg-gradient-to-t from-black/60 to-transparent text-primary-foreground">
-            <div className="flex items-center gap-4">
-              <span className="text-xs">
-                {showGeneratedVideo ? "0:00" : "0:12"}
-              </span>
-              <Slider
-                defaultValue={[showGeneratedVideo ? 0 : 12]}
-                max={showGeneratedVideo ? 5 : 100}
-                step={1}
-                className="flex-1"
-              />
-              <span className="text-xs">
-                {showGeneratedVideo ? "0:05" : "1:30"}
-              </span>
-            </div>
-            <div className="flex items-center justify-between mt-2">
-              <div className="flex items-center gap-1">
-                <Button variant="ghost" size="icon" className="text-white hover:text-white hover:bg-white/10">
-                  <SkipBack className="h-5 w-5" />
-                </Button>
-                <Button variant="ghost" size="icon" className="text-white hover:text-white hover:bg-white/10">
-                  {showGeneratedVideo ? <Play className="h-6 w-6" /> : <Pause className="h-6 w-6" />}
-                </Button>
-                <Button variant="ghost" size="icon" className="text-white hover:text-white hover:bg-white/10">
-                  <SkipForward className="h-5 w-5" />
-                </Button>
-              </div>
-              <div className="flex items-center gap-2">
-                <Button variant="ghost" size="icon" className="text-white hover:text-white hover:bg-white/10">
-                  <Volume2 className="h-5 w-5" />
-                </Button>
+          {!showPlaceholder && (
+            <div className="absolute bottom-0 left-0 right-0 p-3 bg-gradient-to-t from-black/60 to-transparent text-primary-foreground">
+              <div className="flex items-center gap-4">
+                <span className="text-xs">
+                  {showGeneratedVideo ? "0:00" : "0:12"}
+                </span>
                 <Slider
-                  defaultValue={[75]}
-                  max={100}
+                  defaultValue={[showGeneratedVideo ? 0 : 12]}
+                  max={showGeneratedVideo ? 5 : 100}
                   step={1}
-                  className="w-24"
+                  className="flex-1"
                 />
-                <Button variant="ghost" size="icon" className="text-white hover:text-white hover:bg-white/10">
-                  <Maximize className="h-5 w-5" />
-                </Button>
+                <span className="text-xs">
+                  {showGeneratedVideo ? "0:05" : "1:30"}
+                </span>
+              </div>
+              <div className="flex items-center justify-between mt-2">
+                <div className="flex items-center gap-1">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="text-white hover:text-white hover:bg-white/10"
+                  >
+                    <SkipBack className="h-5 w-5" />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="text-white hover:text-white hover:bg-white/10"
+                  >
+                    {showGeneratedVideo ? (
+                      <Play className="h-6 w-6" />
+                    ) : (
+                      <Pause className="h-6 w-6" />
+                    )}
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="text-white hover:text-white hover:bg-white/10"
+                  >
+                    <SkipForward className="h-5 w-5" />
+                  </Button>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="text-white hover:text-white hover:bg-white/10"
+                  >
+                    <Volume2 className="h-5 w-5" />
+                  </Button>
+                  <Slider
+                    defaultValue={[75]}
+                    max={100}
+                    step={1}
+                    className="w-24"
+                  />
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="text-white hover:text-white hover:bg-white/10"
+                  >
+                    <Maximize className="h-5 w-5" />
+                  </Button>
+                </div>
               </div>
             </div>
-          </div>
+          )}
         </div>
       </CardContent>
     </Card>
