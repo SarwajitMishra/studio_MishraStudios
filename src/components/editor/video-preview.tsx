@@ -51,14 +51,14 @@ export function VideoPreview({
             {showPlaceholder && (
               <div className="w-full h-full flex flex-col items-center justify-center text-center gap-4 p-8 bg-card text-card-foreground">
                 <div className="relative">
-                  <Film className="w-24 h-24 text-primary" />
-                  <Sparkles className="absolute -top-2 -right-2 w-8 h-8 text-primary" />
-                  <Sparkles className="absolute bottom-12 -left-2 w-6 h-6 text-primary opacity-70" />
+                  <Film className="w-16 h-16 sm:w-24 sm:h-24 text-primary" />
+                  <Sparkles className="absolute -top-2 -right-2 w-6 h-6 sm:w-8 sm:h-8 text-primary" />
+                  <Sparkles className="absolute bottom-12 -left-2 w-4 h-4 sm:w-6 sm:h-6 text-primary opacity-70" />
                 </div>
-                <h2 className="text-3xl font-bold mt-2">
+                <h2 className="text-2xl sm:text-3xl font-bold mt-2">
                   Start Creating with Mishra Studios
                 </h2>
-                <p className="text-lg text-muted-foreground max-w-md">
+                <p className="text-base sm:text-lg text-muted-foreground max-w-md">
                   Upload a video or enter a prompt to begin editing magic.
                 </p>
                 <Button size="lg" className="mt-2" onClick={onUploadClick}>
