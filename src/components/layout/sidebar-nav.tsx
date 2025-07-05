@@ -22,6 +22,8 @@ import {
   Sparkles,
   Library,
   BookText,
+  Captions,
+  FileText,
 } from "lucide-react";
 import { Button } from "../ui/button";
 import { Card, CardContent } from "../ui/card";
@@ -145,6 +147,32 @@ export function SidebarNav() {
                   <BookText />
                   <span className="group-data-[state=collapsed]:hidden">
                     Text-to-Speech
+                  </span>
+                </SidebarMenuButton>
+              </Link>
+            </SidebarMenuItem>
+            <SidebarMenuItem>
+              <Link href="/captions" className="w-full">
+                <SidebarMenuButton
+                  tooltip="Auto-Caption"
+                  isActive={pathname === "/captions"}
+                >
+                  <Captions />
+                  <span className="group-data-[state=collapsed]:hidden">
+                    Auto-Caption
+                  </span>
+                </SidebarMenuButton>
+              </Link>
+            </SidebarMenuItem>
+            <SidebarMenuItem>
+              <Link href="/summarizer" className="w-full">
+                <SidebarMenuButton
+                  tooltip="Clip Summarizer"
+                  isActive={pathname === "/summarizer"}
+                >
+                  <FileText />
+                  <span className="group-data-[state=collapsed]:hidden">
+                    Clip Summarizer
                   </span>
                 </SidebarMenuButton>
               </Link>

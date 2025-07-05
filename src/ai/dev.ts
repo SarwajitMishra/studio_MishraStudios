@@ -11,3 +11,5 @@ import '@/ai/flows/generate-clip-ideas.ts';
 import '@/ai/flows/text-to-speech-narration.ts';
 import '@/ai/flows/image-to-video.ts';
 import '@/ai/flows/audio-to-video.ts';
+import '@/ai/flows/auto-caption.ts';
+import '@/ai/flows/clip-summarizer.ts';
