@@ -142,7 +142,7 @@ export function PromptSection({
          </Button>
 
           <Textarea
-            placeholder="e.g., 'Make the lion look like it's on the moon.'"
+            placeholder="Type a prompt or upload a file to generate a clip..."
             className="text-base resize-none flex-1"
             rows={1}
             value={prompt}
@@ -179,11 +179,6 @@ export function PromptSection({
                     <span className="sr-only">Remove file</span>
                 </Button>
             </div>
-        )}
-        {!fileName && (
-            <p className="text-sm text-muted-foreground text-center mt-2">
-                Type a prompt and/or upload a file (image, video, audio) to get started.
-            </p>
         )}
     </Card>
   );

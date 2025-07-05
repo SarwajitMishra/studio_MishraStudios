@@ -21,7 +21,7 @@ export default function Home() {
           <Header />
           <main className="flex-1 grid grid-rows-[1fr_auto] gap-4 p-4 lg:p-6 overflow-hidden">
             <EditorLayout />
-            <div className="h-[280px] lg:h-[320px]">
+            <div className="h-[200px] md:h-[280px] lg:h-[320px]">
               <Timeline />
             </div>
           </main>
