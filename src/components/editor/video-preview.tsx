@@ -34,8 +34,11 @@ export function VideoPreview({
   return (
     <Card className="h-full shadow-md overflow-hidden">
       <CardContent className="p-0 h-full flex flex-col bg-background">
-        <div className="flex-1 relative flex items-center justify-center">
-          <AspectRatio ratio={16 / 9} className="w-full">
+        <div className="flex-1 relative flex items-center justify-center overflow-hidden p-2 sm:p-4">
+          <AspectRatio
+            ratio={16 / 9}
+            className="w-full rounded-lg bg-muted flex items-center justify-center"
+          >
             {showLoadingState && (
               <div className="w-full h-full flex flex-col items-center justify-center gap-4 text-primary-foreground">
                 <Loader2 className="w-12 h-12 animate-spin text-primary" />
@@ -49,7 +52,7 @@ export function VideoPreview({
             )}
 
             {showPlaceholder && (
-              <div className="w-full h-full flex flex-col items-center justify-center text-center gap-4 p-8 bg-card text-card-foreground">
+              <div className="w-full h-full flex flex-col items-center justify-center text-center gap-4 p-8 bg-card text-card-foreground rounded-lg">
                 <div className="relative">
                   <Film className="w-16 h-16 sm:w-24 sm:h-24 text-primary" />
                   <Sparkles className="absolute -top-2 -right-2 w-6 h-6 sm:w-8 sm:h-8 text-primary" />
@@ -74,7 +77,7 @@ export function VideoPreview({
                 alt="Generated video"
                 data-ai-hint="generated art"
                 fill
-                className="object-contain"
+                className="object-contain rounded-lg"
               />
             )}
           </AspectRatio>
