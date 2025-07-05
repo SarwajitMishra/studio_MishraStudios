@@ -1,5 +1,6 @@
-"use client"
+"use client";
 
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -13,7 +14,10 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { LogOut, User, Settings } from "lucide-react";
 
 export function UserAuthButton() {
-  const isLoggedIn = true; // Mock state
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+  const handleLogin = () => setIsLoggedIn(true);
+  const handleLogout = () => setIsLoggedIn(false);
 
   if (isLoggedIn) {
     return (
@@ -32,7 +36,9 @@ export function UserAuthButton() {
               <AvatarFallback>N</AvatarFallback>
             </Avatar>
             <div className="group-data-[state=collapsed]:hidden">
-              <p className="text-sm font-medium leading-none text-left">User</p>
+              <p className="text-sm font-medium leading-none text-left">
+                User
+              </p>
               <p className="text-xs leading-none text-muted-foreground text-left">
                 user@example.com
               </p>
@@ -58,7 +64,7 @@ export function UserAuthButton() {
             <span>Settings</span>
           </DropdownMenuItem>
           <DropdownMenuSeparator />
-          <DropdownMenuItem>
+          <DropdownMenuItem onClick={handleLogout}>
             <LogOut className="mr-2 h-4 w-4" />
             <span>Log out</span>
           </DropdownMenuItem>
@@ -68,8 +74,10 @@ export function UserAuthButton() {
   }
 
   return (
-    <div className="flex items-center gap-2">
-      <Button variant="ghost" size="sm">Sign In</Button>
+    <div className="flex flex-col gap-2 group-data-[state=collapsed]:hidden">
+      <Button variant="outline" size="sm" onClick={handleLogin}>
+        Sign In
+      </Button>
       <Button size="sm">Sign Up</Button>
     </div>
   );
