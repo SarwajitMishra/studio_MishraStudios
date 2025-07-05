@@ -3,15 +3,13 @@
 import { useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { Loader2, Wand2, Sparkles, Upload, FileImage, FileVideo, FileAudio } from "lucide-react";
+import { Loader2, Sparkles, Upload, X } from "lucide-react";
 import { textToVideo } from "@/ai/flows/text-to-video";
 import { imageToVideo } from "@/ai/flows/image-to-video";
 import { promptToVideo } from "@/ai/flows/prompt-to-video";
 import { audioToVideo } from "@/ai/flows/audio-to-video";
 import { useToast } from "@/hooks/use-toast";
 import { Card } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { cn } from "@/lib/utils";
 
 interface PromptSectionProps {
   setIsLoading: (isLoading: boolean) => void;
@@ -24,7 +22,6 @@ export function PromptSection({
   setVideoUrl,
   isLoading,
 }: PromptSectionProps) {
-  const [activeTab, setActiveTab] = useState("text");
   const [prompt, setPrompt] = useState(
     "A majestic lion in the savanna at sunrise."
   );
@@ -46,11 +43,13 @@ export function PromptSection({
     }
   };
   
-  const onTabChange = (value: string) => {
-    setActiveTab(value);
+  const clearUpload = () => {
     setFileDataUri(null);
     setFileName(null);
-  };
+    if(fileInputRef.current) {
+        fileInputRef.current.value = "";
+    }
+  }
 
   const handleApplyPrompt = async () => {
     if (!prompt) {
@@ -61,25 +60,25 @@ export function PromptSection({
       });
       return;
     }
-    if (activeTab !== "text" && !fileDataUri) {
-       toast({
-        title: "File not selected",
-        description: `Please select an ${activeTab} file to proceed.`,
-        variant: "destructive",
-      });
-      return;
-    }
 
     setIsLoading(true);
     setVideoUrl(null);
 
     try {
       let result: { videoDataUri?: string; videoClipDataUri?: string } = {};
+      let fileType = '';
+      if (fileDataUri) {
+          const mimeType = fileDataUri.split(':')[1].split(';')[0];
+          if (mimeType.startsWith('image/')) {
+              fileType = 'image';
+          } else if (mimeType.startsWith('video/')) {
+              fileType = 'video';
+          } else if (mimeType.startsWith('audio/')) {
+              fileType = 'audio';
+          }
+      }
 
-      switch (activeTab) {
-        case "text":
-          result = await textToVideo({ prompt });
-          break;
+      switch (fileType) {
         case "image":
           result = await imageToVideo({ prompt, imageDataUri: fileDataUri! });
           break;
@@ -90,7 +89,12 @@ export function PromptSection({
           result = await audioToVideo({ prompt, audioDataUri: fileDataUri! });
           break;
         default:
-          throw new Error("Invalid tab selected");
+          if (!fileDataUri) {
+             result = await textToVideo({ prompt });
+          } else {
+            throw new Error("Unsupported file type provided.");
+          }
+          break;
       }
       
       const newVideoUrl = result.videoDataUri || result.videoClipDataUri;
@@ -121,14 +125,18 @@ export function PromptSection({
 
   return (
     <Card className="p-2 shadow-md">
-      <Tabs value={activeTab} onValueChange={onTabChange} className="w-full">
-        <div className="flex items-center gap-2">
-           <TabsList className="grid grid-cols-4 w-auto h-auto p-1">
-            <TabsTrigger value="text" className="px-3 py-1.5"><Wand2 className="h-4 w-4 mr-2 hidden sm:inline-flex"/>Text</TabsTrigger>
-            <TabsTrigger value="image" className="px-3 py-1.5"><FileImage className="h-4 w-4 mr-2 hidden sm:inline-flex"/>Image</TabsTrigger>
-            <TabsTrigger value="video" className="px-3 py-1.5"><FileVideo className="h-4 w-4 mr-2 hidden sm:inline-flex"/>Video</TabsTrigger>
-            <TabsTrigger value="audio" className="px-3 py-1.5"><FileAudio className="h-4 w-4 mr-2 hidden sm:inline-flex"/>Audio</TabsTrigger>
-          </TabsList>
+       <div className="flex items-center gap-2">
+         <input 
+            type="file" 
+            accept="image/*,video/*,audio/*" 
+            ref={fileInputRef} 
+            onChange={handleFileChange} 
+            className="hidden" 
+         />
+         <Button variant="outline" size="icon" onClick={() => fileInputRef.current?.click()} className="shrink-0">
+            <Upload className="h-5 w-5"/>
+            <span className="sr-only">Upload media</span>
+         </Button>
 
           <Textarea
             placeholder="e.g., 'Make the lion look like it's on the moon.'"
@@ -146,7 +154,7 @@ export function PromptSection({
           <Button
             className="font-semibold text-base"
             onClick={handleApplyPrompt}
-            disabled={isLoading}
+            disabled={isLoading || (!prompt && !fileDataUri)}
           >
             {isLoading ? (
               <Loader2 className="mr-2 h-5 w-5 animate-spin" />
@@ -157,34 +165,23 @@ export function PromptSection({
             <span className="sm:hidden">Apply</span>
           </Button>
         </div>
-        <TabsContent value="text" className="mt-2 text-sm text-muted-foreground text-center">
-         Provide a text prompt to generate a new video clip.
-        </TabsContent>
-        <TabsContent value="image" className="mt-2 space-y-2">
-            <input type="file" accept="image/*" ref={fileInputRef} onChange={handleFileChange} className="hidden" />
-            <Button variant="outline" onClick={() => fileInputRef.current?.click()} className="w-full">
-                <Upload className="mr-2 h-4 w-4" />
-                {fileName || "Upload an Image"}
-            </Button>
-            <p className="text-sm text-muted-foreground text-center">Provide an image and a prompt to generate a video inspired by it.</p>
-        </TabsContent>
-        <TabsContent value="video" className="mt-2 space-y-2">
-            <input type="file" accept="video/*" ref={fileInputRef} onChange={handleFileChange} className="hidden" />
-            <Button variant="outline" onClick={() => fileInputRef.current?.click()} className="w-full">
-                <Upload className="mr-2 h-4 w-4" />
-                {fileName || "Upload a Video"}
-            </Button>
-            <p className="text-sm text-muted-foreground text-center">Provide a video and a prompt to edit it with AI.</p>
-        </TabsContent>
-        <TabsContent value="audio" className="mt-2 space-y-2">
-            <input type="file" accept="audio/*" ref={fileInputRef} onChange={handleFileChange} className="hidden" />
-            <Button variant="outline" onClick={() => fileInputRef.current?.click()} className="w-full">
-                <Upload className="mr-2 h-4 w-4" />
-                {fileName || "Upload an Audio File"}
-            </Button>
-            <p className="text-sm text-muted-foreground text-center">Provide an audio file and a prompt to create a matching video.</p>
-        </TabsContent>
-      </Tabs>
+        {fileName && (
+            <div className="mt-2 pl-1 text-sm text-muted-foreground flex items-center justify-between">
+                <div className="flex items-center gap-2 truncate">
+                    <span>Attached:</span>
+                    <span className="font-medium text-foreground truncate">{fileName}</span>
+                </div>
+                <Button variant="ghost" size="icon" className="h-6 w-6 shrink-0" onClick={clearUpload}>
+                    <X className="h-4 w-4" />
+                    <span className="sr-only">Remove file</span>
+                </Button>
+            </div>
+        )}
+        {!fileName && (
+            <p className="text-sm text-muted-foreground text-center mt-2">
+                Type a prompt and/or upload a file (image, video, audio) to get started.
+            </p>
+        )}
     </Card>
   );
 }
