@@ -1,0 +1,53 @@
+'use server';
+
+/**
+ * @fileOverview Analyzes an uploaded video to suggest key moments or scenes.
+ *
+ * - videoScanAnalysis - A function that handles the video scan analysis process.
+ * - VideoScanAnalysisInput - The input type for the videoScanAnalysis function.
+ * - VideoScanAnalysisOutput - The return type for the videoScanAnalysis function.
+ */
+
+import {ai} from '@/ai/genkit';
+import {z} from 'genkit';
+
+const VideoScanAnalysisInputSchema = z.object({
+  videoDataUri: z
+    .string()
+    .describe(
+      "A video file as a data URI that must include a MIME type and use Base64 encoding. Expected format: 'data:<mimetype>;base64,<encoded_data>'."
+    ),
+});
+export type VideoScanAnalysisInput = z.infer<typeof VideoScanAnalysisInputSchema>;
+
+const VideoScanAnalysisOutputSchema = z.object({
+  suggestedClips: z
+    .array(z.string())
+    .describe('An array of suggested clip ideas based on the video content.'),
+});
+export type VideoScanAnalysisOutput = z.infer<typeof VideoScanAnalysisOutputSchema>;
+
+export async function videoScanAnalysis(input: VideoScanAnalysisInput): Promise<VideoScanAnalysisOutput> {
+  return videoScanAnalysisFlow(input);
+}
+
+const prompt = ai.definePrompt({
+  name: 'videoScanAnalysisPrompt',
+  input: {schema: VideoScanAnalysisInputSchema},
+  output: {schema: VideoScanAnalysisOutputSchema},
+  prompt: `You are an AI video analysis expert. Your task is to analyze the uploaded video and suggest key moments or scenes that might be interesting for the user to include in their video edit. Provide a list of suggested clip ideas. Focus on identifying highlights, memorable scenes, or moments that would capture viewer attention. Use a concise description for each clip. Limit the list to no more than 5 suggestions.
+
+Video: {{media url=videoDataUri}}`,
+});
+
+const videoScanAnalysisFlow = ai.defineFlow(
+  {
+    name: 'videoScanAnalysisFlow',
+    inputSchema: VideoScanAnalysisInputSchema,
+    outputSchema: VideoScanAnalysisOutputSchema,
+  },
+  async input => {
+    const {output} = await prompt(input);
+    return output!;
+  }
+);
