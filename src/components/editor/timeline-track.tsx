@@ -1,9 +1,8 @@
-import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
-import { GripVertical, Mic, Music, Video } from "lucide-react";
+import { GripVertical, Mic, Music, Video, Image as ImageIcon } from "lucide-react";
 
 interface TimelineTrackProps {
-  type: "video" | "audio" | "voice";
+  type: "video" | "audio" | "voice" | "image";
   label: string;
   clips: { start: number; end: number; color: string }[];
 }
@@ -12,6 +11,7 @@ const typeIcons = {
   video: <Video className="w-4 h-4" />,
   audio: <Music className="w-4 h-4" />,
   voice: <Mic className="w-4 h-4" />,
+  image: <ImageIcon className="w-4 h-4" />,
 };
 
 export function TimelineTrack({ type, label, clips }: TimelineTrackProps) {

@@ -27,6 +27,10 @@ export function Timeline() {
     { start: 30, end: 50, color: "bg-blue-500" },
     { start: 65, end: 90, color: "bg-green-500" },
   ];
+  const imageClips = [
+    { start: 28, end: 42, color: "bg-pink-500" },
+    { start: 55, end: 70, color: "bg-indigo-500" },
+  ];
   const audioClips = [{ start: 0, end: 100, color: "bg-teal-500" }];
   const voiceClips = [{ start: 10, end: 80, color: "bg-orange-500" }];
 
@@ -88,6 +92,7 @@ export function Timeline() {
         <ScrollArea className="flex-1">
           <div className="relative">
             <TimelineTrack type="video" label="Video" clips={clips} />
+            <TimelineTrack type="image" label="Images" clips={imageClips} />
             <TimelineTrack
               type="audio"
               label="Background Music"

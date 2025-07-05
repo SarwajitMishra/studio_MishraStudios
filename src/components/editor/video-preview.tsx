@@ -10,7 +10,6 @@ import {
   SkipForward,
   Volume2,
   Maximize,
-  VolumeX,
   Loader2,
 } from "lucide-react";
 
@@ -42,24 +41,13 @@ export function VideoPreview({ videoUrl, isLoading }: VideoPreviewProps) {
             )}
 
             {showPlaceholder && (
-              <>
-                <Image
-                  src="https://placehold.co/1280x720.png"
-                  alt="Video preview"
-                  data-ai-hint="video still"
-                  fill
-                  className="object-contain"
-                />
-                <div className="absolute inset-0 flex items-center justify-center bg-black/30">
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-20 w-20 text-white/80 hover:text-white hover:bg-white/20"
-                  >
-                    <Play className="h-12 w-12 fill-current" />
-                  </Button>
-                </div>
-              </>
+              <Image
+                src="https://placehold.co/1280x720.png"
+                alt="Video preview"
+                data-ai-hint="video still"
+                fill
+                className="object-contain"
+              />
             )}
 
             {showGeneratedVideo && (
