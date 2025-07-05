@@ -157,29 +157,32 @@ export function PromptSection({
             <span className="sm:hidden">Apply</span>
           </Button>
         </div>
-        <TabsContent value="text" className="mt-2 text-sm text-muted-foreground">
+        <TabsContent value="text" className="mt-2 text-sm text-muted-foreground text-center">
          Provide a text prompt to generate a new video clip.
         </TabsContent>
-        <TabsContent value="image" className="mt-2">
+        <TabsContent value="image" className="mt-2 space-y-2">
             <input type="file" accept="image/*" ref={fileInputRef} onChange={handleFileChange} className="hidden" />
             <Button variant="outline" onClick={() => fileInputRef.current?.click()} className="w-full">
                 <Upload className="mr-2 h-4 w-4" />
                 {fileName || "Upload an Image"}
             </Button>
+            <p className="text-sm text-muted-foreground text-center">Provide an image and a prompt to generate a video inspired by it.</p>
         </TabsContent>
-        <TabsContent value="video" className="mt-2">
+        <TabsContent value="video" className="mt-2 space-y-2">
             <input type="file" accept="video/*" ref={fileInputRef} onChange={handleFileChange} className="hidden" />
             <Button variant="outline" onClick={() => fileInputRef.current?.click()} className="w-full">
                 <Upload className="mr-2 h-4 w-4" />
                 {fileName || "Upload a Video"}
             </Button>
+            <p className="text-sm text-muted-foreground text-center">Provide a video and a prompt to edit it with AI.</p>
         </TabsContent>
-        <TabsContent value="audio" className="mt-2">
+        <TabsContent value="audio" className="mt-2 space-y-2">
             <input type="file" accept="audio/*" ref={fileInputRef} onChange={handleFileChange} className="hidden" />
             <Button variant="outline" onClick={() => fileInputRef.current?.click()} className="w-full">
                 <Upload className="mr-2 h-4 w-4" />
                 {fileName || "Upload an Audio File"}
             </Button>
+            <p className="text-sm text-muted-foreground text-center">Provide an audio file and a prompt to create a matching video.</p>
         </TabsContent>
       </Tabs>
     </Card>
