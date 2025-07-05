@@ -25,9 +25,9 @@ export function VideoPreview({ videoUrl, isLoading }: VideoPreviewProps) {
 
   return (
     <Card className="h-full shadow-md overflow-hidden">
-      <CardContent className="p-0 h-full flex flex-col">
-        <div className="flex-1 bg-black flex items-center justify-center">
-          <AspectRatio ratio={16 / 9} className="max-w-full bg-muted">
+      <CardContent className="p-0 h-full flex flex-col bg-black">
+        <div className="flex-1 relative flex items-center justify-center">
+          <AspectRatio ratio={16 / 9} className="w-full bg-muted">
             {showLoadingState && (
               <div className="w-full h-full flex flex-col items-center justify-center gap-4 text-primary-foreground">
                 <Loader2 className="w-12 h-12 animate-spin text-primary" />
@@ -60,47 +60,49 @@ export function VideoPreview({ videoUrl, isLoading }: VideoPreviewProps) {
               />
             )}
           </AspectRatio>
-        </div>
-        <div className="p-3 border-t bg-card">
-          <div className="flex items-center gap-4">
-            <span className="text-xs text-muted-foreground">
-              {showGeneratedVideo ? "0:00" : "0:12"}
-            </span>
-            <Slider
-              defaultValue={[showGeneratedVideo ? 0 : 12]}
-              max={showGeneratedVideo ? 5 : 100}
-              step={1}
-              className="flex-1"
-            />
-            <span className="text-xs text-muted-foreground">
-              {showGeneratedVideo ? "0:05" : "1:30"}
-            </span>
-          </div>
-          <div className="flex items-center justify-between mt-2">
-            <div className="flex items-center gap-1">
-              <Button variant="ghost" size="icon">
-                <SkipBack className="h-5 w-5" />
-              </Button>
-              <Button variant="ghost" size="icon">
-                {showGeneratedVideo ? <Play className="h-6 w-6" /> : <Pause className="h-6 w-6" />}
-              </Button>
-              <Button variant="ghost" size="icon">
-                <SkipForward className="h-5 w-5" />
-              </Button>
-            </div>
-            <div className="flex items-center gap-2">
-              <Button variant="ghost" size="icon">
-                <Volume2 className="h-5 w-5" />
-              </Button>
+
+          {/* Controls Overlay */}
+          <div className="absolute bottom-0 left-0 right-0 p-3 bg-gradient-to-t from-black/60 to-transparent text-primary-foreground">
+            <div className="flex items-center gap-4">
+              <span className="text-xs">
+                {showGeneratedVideo ? "0:00" : "0:12"}
+              </span>
               <Slider
-                defaultValue={[75]}
-                max={100}
+                defaultValue={[showGeneratedVideo ? 0 : 12]}
+                max={showGeneratedVideo ? 5 : 100}
                 step={1}
-                className="w-24"
+                className="flex-1"
               />
-              <Button variant="ghost" size="icon">
-                <Maximize className="h-5 w-5" />
-              </Button>
+              <span className="text-xs">
+                {showGeneratedVideo ? "0:05" : "1:30"}
+              </span>
+            </div>
+            <div className="flex items-center justify-between mt-2">
+              <div className="flex items-center gap-1">
+                <Button variant="ghost" size="icon" className="text-white hover:text-white hover:bg-white/10">
+                  <SkipBack className="h-5 w-5" />
+                </Button>
+                <Button variant="ghost" size="icon" className="text-white hover:text-white hover:bg-white/10">
+                  {showGeneratedVideo ? <Play className="h-6 w-6" /> : <Pause className="h-6 w-6" />}
+                </Button>
+                <Button variant="ghost" size="icon" className="text-white hover:text-white hover:bg-white/10">
+                  <SkipForward className="h-5 w-5" />
+                </Button>
+              </div>
+              <div className="flex items-center gap-2">
+                <Button variant="ghost" size="icon" className="text-white hover:text-white hover:bg-white/10">
+                  <Volume2 className="h-5 w-5" />
+                </Button>
+                <Slider
+                  defaultValue={[75]}
+                  max={100}
+                  step={1}
+                  className="w-24"
+                />
+                <Button variant="ghost" size="icon" className="text-white hover:text-white hover:bg-white/10">
+                  <Maximize className="h-5 w-5" />
+                </Button>
+              </div>
             </div>
           </div>
         </div>

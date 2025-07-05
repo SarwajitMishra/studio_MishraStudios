@@ -1,7 +1,5 @@
 "use client";
 
-import { UserAuthButton } from "@/components/auth/user-auth-button";
-import { DarkModeToggle } from "@/components/dark-mode-toggle";
 import { Icons } from "@/components/icons";
 import { Button } from "@/components/ui/button";
 import {
@@ -22,6 +20,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
 import {
   Select,
   SelectContent,
@@ -41,6 +40,7 @@ import {
   Share2,
   Twitter,
   Youtube,
+  Lock,
 } from "lucide-react";
 
 export function Header() {
@@ -107,8 +107,11 @@ export function Header() {
                       <SelectContent>
                         <SelectItem value="720p">720p (HD)</SelectItem>
                         <SelectItem value="1080p">1080p (Full HD)</SelectItem>
-                        <SelectItem value="4k">
-                          4K (Ultra HD) - Premium
+                        <SelectItem value="4k" disabled>
+                          <div className="flex items-center gap-2">
+                            <Lock className="h-3 w-3" />
+                            <span>4K (Ultra HD) - Premium</span>
+                          </div>
                         </SelectItem>
                       </SelectContent>
                     </Select>
@@ -126,6 +129,14 @@ export function Header() {
                         <SelectItem value="mov">MOV</SelectItem>
                       </SelectContent>
                     </Select>
+                  </div>
+                  <div className="grid grid-cols-4 items-center gap-4">
+                    <Label htmlFor="watermark" className="text-right">
+                      Watermark
+                    </Label>
+                    <div className="col-span-3">
+                      <Switch id="watermark" defaultChecked />
+                    </div>
                   </div>
                 </div>
                 <DialogFooter>
@@ -172,8 +183,6 @@ export function Header() {
             </Tabs>
           </DialogContent>
         </Dialog>
-        <DarkModeToggle />
-        <UserAuthButton />
       </div>
     </header>
   );

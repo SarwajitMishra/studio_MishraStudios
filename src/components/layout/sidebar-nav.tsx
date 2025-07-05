@@ -25,6 +25,8 @@ import {
   CarouselContent,
   CarouselItem,
 } from "../ui/carousel";
+import { UserAuthButton } from "../auth/user-auth-button";
+import { DarkModeToggle } from "../dark-mode-toggle";
 
 export function SidebarNav() {
   const samplePrompts = [
@@ -40,18 +42,18 @@ export function SidebarNav() {
       <SidebarHeader>
         <div className="flex items-center gap-2">
           <Icons.Logo className="w-7 h-7 text-primary" />
-          <span className="text-lg font-semibold">Mishra Studios</span>
+          <span className="text-lg font-semibold group-data-[state=collapsed]:hidden">Mishra Studios</span>
         </div>
       </SidebarHeader>
       <SidebarContent className="gap-4">
         <div className="px-2">
           <Button
-            className="w-full justify-start text-base"
+            className="w-full justify-start text-base group-data-[state=collapsed]:justify-center group-data-[state=collapsed]:w-auto group-data-[state=collapsed]:p-2"
             size="lg"
             variant="outline"
           >
-            <Upload className="mr-2 h-5 w-5" />
-            <span>Upload...</span>
+            <Upload className="mr-2 h-5 w-5 group-data-[state=collapsed]:mr-0" />
+            <span className="group-data-[state=collapsed]:hidden">Upload...</span>
           </Button>
         </div>
 
@@ -61,13 +63,13 @@ export function SidebarNav() {
             <SidebarMenuItem>
               <SidebarMenuButton tooltip="Media Library" isActive>
                 <Library />
-                <span>Media Library</span>
+                <span className="group-data-[state=collapsed]:hidden">Media Library</span>
               </SidebarMenuButton>
             </SidebarMenuItem>
             <SidebarMenuItem>
               <SidebarMenuButton tooltip="Dashboard">
                 <LayoutDashboard />
-                <span>Dashboard</span>
+                <span className="group-data-[state=collapsed]:hidden">Dashboard</span>
               </SidebarMenuButton>
             </SidebarMenuItem>
           </SidebarMenu>
@@ -75,7 +77,7 @@ export function SidebarNav() {
 
         <SidebarGroup>
           <SidebarGroupLabel>Prompts</SidebarGroupLabel>
-          <div className="px-2">
+          <div className="px-2 group-data-[state=collapsed]:hidden">
             <Carousel opts={{ loop: true }} className="w-full">
               <CarouselContent>
                 {samplePrompts.map((prompt, index) => (
@@ -100,13 +102,13 @@ export function SidebarNav() {
             <SidebarMenuItem>
               <SidebarMenuButton tooltip="Text-to-Speech">
                 <BookText />
-                <span>Text-to-Speech</span>
+                <span className="group-data-[state=collapsed]:hidden">Text-to-Speech</span>
               </SidebarMenuButton>
             </SidebarMenuItem>
             <SidebarMenuItem>
               <SidebarMenuButton tooltip="Media Generation">
                 <Sparkles />
-                <span>Media Generation</span>
+                <span className="group-data-[state=collapsed]:hidden">Media Generation</span>
               </SidebarMenuButton>
             </SidebarMenuItem>
           </SidebarMenu>
@@ -114,14 +116,16 @@ export function SidebarNav() {
       </SidebarContent>
       <SidebarFooter>
         <SidebarSeparator />
-        <SidebarMenu>
-          <SidebarMenuItem>
-            <SidebarMenuButton tooltip="Settings">
-              <Settings />
-              <span>Settings</span>
-            </SidebarMenuButton>
-          </SidebarMenuItem>
-        </SidebarMenu>
+        <div className="p-2 flex flex-col gap-2">
+          <div className="group-data-[state=expanded]:hidden">
+            <DarkModeToggle />
+          </div>
+          <div className="group-data-[state=collapsed]:hidden flex justify-between items-center">
+            <span className="text-sm">Dark Mode</span>
+            <DarkModeToggle />
+          </div>
+          <UserAuthButton />
+        </div>
       </SidebarFooter>
     </>
   );

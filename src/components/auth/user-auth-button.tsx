@@ -13,17 +13,30 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { LogOut, User, Settings } from "lucide-react";
 
 export function UserAuthButton() {
-  const isLoggedIn = false; // Mock state
+  const isLoggedIn = true; // Mock state
 
   if (isLoggedIn) {
     return (
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button variant="ghost" className="relative h-10 w-10 rounded-full">
-            <Avatar className="h-10 w-10">
-              <AvatarImage src="https://placehold.co/40x40.png" alt="User Avatar" />
-              <AvatarFallback>U</AvatarFallback>
+          <Button
+            variant="ghost"
+            className="w-full justify-start items-center gap-3 p-2 h-auto"
+          >
+            <Avatar className="h-9 w-9">
+              <AvatarImage
+                src="https://placehold.co/40x40.png"
+                alt="User Avatar"
+                data-ai-hint="person portrait"
+              />
+              <AvatarFallback>N</AvatarFallback>
             </Avatar>
+            <div className="group-data-[state=collapsed]:hidden">
+              <p className="text-sm font-medium leading-none text-left">User</p>
+              <p className="text-xs leading-none text-muted-foreground text-left">
+                user@example.com
+              </p>
+            </div>
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent className="w-56" align="end" forceMount>

@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { Loader2, Wand2 } from "lucide-react";
+import { Loader2, Wand2, Sparkles } from "lucide-react";
 import { textToVideo } from "@/ai/flows/text-to-video";
 import { useToast } from "@/hooks/use-toast";
 import { Card } from "@/components/ui/card";
@@ -65,6 +65,10 @@ export function PromptSection({
   return (
     <Card className="p-2 shadow-md">
       <div className="flex items-center gap-2">
+        <Button variant="ghost" size="icon">
+          <Sparkles className="h-5 w-5" />
+          <span className="sr-only">Prompt Suggestions</span>
+        </Button>
         <Textarea
           placeholder="e.g., 'Make the lion look like it's on the moon.'"
           className="text-base resize-none flex-1"

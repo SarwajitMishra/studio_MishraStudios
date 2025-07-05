@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
+import { Slider } from "@/components/ui/slider";
 import {
   Tooltip,
   TooltipContent,
@@ -83,7 +84,7 @@ export function Timeline() {
             <Button variant="ghost" size="icon">
               <ZoomOut className="w-4 h-4" />
             </Button>
-            {/* A range slider for zoom would go here */}
+            <Slider defaultValue={[50]} max={100} step={1} className="w-24" />
             <Button variant="ghost" size="icon">
               <ZoomIn className="w-4 h-4" />
             </Button>
