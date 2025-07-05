@@ -15,7 +15,7 @@ export default function Home() {
       </Sidebar>
       <SidebarInset>
         <Header />
-        <main className="p-4 lg:p-6 bg-background">
+        <main className="p-4 lg:p-6 bg-background flex-1">
           <EditorLayout />
         </main>
       </SidebarInset>

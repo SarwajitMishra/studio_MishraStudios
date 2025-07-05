@@ -56,8 +56,8 @@ export function UserAuthButton() {
 
   return (
     <div className="flex items-center gap-2">
-      <Button variant="ghost">Sign In</Button>
-      <Button>Sign Up</Button>
+      <Button variant="ghost" size="sm">Sign In</Button>
+      <Button size="sm">Sign Up</Button>
     </div>
   );
 }

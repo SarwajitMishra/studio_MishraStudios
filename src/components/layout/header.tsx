@@ -59,12 +59,18 @@ export function Header() {
       </div>
 
 
-      <div className="flex flex-1 items-center justify-end gap-4">
+      <div className="flex flex-1 items-center justify-end gap-2 sm:gap-4">
         <Dialog>
           <DialogTrigger asChild>
-            <Button>
+            <Button className="hidden sm:inline-flex">
               <Share2 className="mr-2 h-4 w-4" />
               Export
+            </Button>
+          </DialogTrigger>
+          <DialogTrigger asChild>
+            <Button size="icon" className="sm:hidden">
+              <Share2 className="h-4 w-4" />
+              <span className="sr-only">Export</span>
             </Button>
           </DialogTrigger>
           <DialogContent>
