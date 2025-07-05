@@ -9,3 +9,5 @@ import '@/ai/flows/auto-suggest-prompt.ts';
 import '@/ai/flows/background-music-generation.ts';
 import '@/ai/flows/generate-clip-ideas.ts';
 import '@/ai/flows/text-to-speech-narration.ts';
+import '@/ai/flows/image-to-video.ts';
+import '@/ai/flows/audio-to-video.ts';

@@ -1,0 +1,79 @@
+'use server';
+
+/**
+ * @fileOverview An AI agent that creates a video clip based on an image and a user prompt.
+ *
+ * - imageToVideo - A function that handles the video clip creation process.
+ * - ImageToVideoInput - The input type for the imageToVideo function.
+ * - ImageToVideoOutput - The return type for the imageToVideo function.
+ */
+
+import {ai} from '@/ai/genkit';
+import {z} from 'genkit';
+
+const ImageToVideoInputSchema = z.object({
+  imageDataUri: z
+    .string()
+    .describe(
+      "An image file, as a data URI that must include a MIME type and use Base64 encoding. Expected format: 'data:<mimetype>;base64,<encoded_data>'."
+    ),
+  prompt: z.string().describe('A natural language prompt for creating the video clip.'),
+});
+export type ImageToVideoInput = z.infer<typeof ImageToVideoInputSchema>;
+
+const ImageToVideoOutputSchema = z.object({
+  videoDataUri: z
+    .string()
+    .describe(
+      'A video clip data URI, created based on the user prompt and image.'
+    ),
+});
+export type ImageToVideoOutput = z.infer<typeof ImageToVideoOutputSchema>;
+
+export async function imageToVideo(input: ImageToVideoInput): Promise<ImageToVideoOutput> {
+  return imageToVideoFlow(input);
+}
+
+const imageToVideoFlow = ai.defineFlow(
+  {
+    name: 'imageToVideoFlow',
+    inputSchema: ImageToVideoInputSchema,
+    outputSchema: ImageToVideoOutputSchema,
+  },
+  async (input) => {
+    const {media} = await ai.generate({
+      model: 'googleai/gemini-2.0-flash-preview-image-generation',
+      prompt: [
+        {media: {url: input.imageDataUri}},
+        {text: input.prompt},
+      ],
+      config: {
+        responseModalities: ['TEXT', 'IMAGE'],
+         safetySettings: [
+          {
+            category: 'HARM_CATEGORY_HATE_SPEECH',
+            threshold: 'BLOCK_NONE',
+          },
+          {
+            category: 'HARM_CATEGORY_DANGEROUS_CONTENT',
+            threshold: 'BLOCK_NONE',
+          },
+          {
+            category: 'HARM_CATEGORY_HARASSMENT',
+            threshold: 'BLOCK_NONE',
+          },
+          {
+            category: 'HARM_CATEGORY_SEXUALLY_EXPLICIT',
+            threshold: 'BLOCK_NONE',
+          },
+        ],
+      },
+    });
+
+    if (!media?.url) {
+      throw new Error('No image was generated.');
+    }
+
+    return {videoDataUri: media.url};
+  }
+);
