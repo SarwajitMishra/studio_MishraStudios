@@ -10,7 +10,6 @@
 
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
-import { textToVideo } from './text-to-video';
 
 const PromptToVideoInputSchema = z.object({
   gcsUri: z
@@ -36,8 +35,7 @@ export async function promptToVideo(input: PromptToVideoInput): Promise<PromptTo
   return promptToVideoFlow(input);
 }
 
-// For now, this flow will ignore the uploaded video and just use the text prompt to generate a new clip.
-// A more advanced implementation could use the video as context for generation.
+// Updated to use the video as context for generation.
 const promptToVideoFlow = ai.defineFlow(
   {
     name: 'promptToVideoFlow',
@@ -45,8 +43,27 @@ const promptToVideoFlow = ai.defineFlow(
     outputSchema: PromptToVideoOutputSchema,
   },
   async (input) => {
-    // Note: The gcsUri is ignored in this basic implementation, but contentType is required for consistency.
-    const result = await textToVideo({ prompt: input.prompt });
-    return { videoClipDataUri: result.videoDataUri };
+    const { media } = await ai.generate({
+      model: 'googleai/gemini-2.0-flash-preview-image-generation',
+      prompt: [
+        { media: { url: input.gcsUri, mimeType: input.contentType } },
+        { text: `Based on the provided video, generate a new image that matches this style and incorporates the following prompt: ${input.prompt}` },
+      ],
+      config: {
+        responseModalities: ['TEXT', 'IMAGE'],
+        safetySettings: [
+          { category: 'HARM_CATEGORY_HATE_SPEECH', threshold: 'BLOCK_NONE' },
+          { category: 'HARM_CATEGORY_DANGEROUS_CONTENT', threshold: 'BLOCK_NONE' },
+          { category: 'HARM_CATEGORY_HARASSMENT', threshold: 'BLOCK_NONE' },
+          { category: 'HARM_CATEGORY_SEXUALLY_EXPLICIT', threshold: 'BLOCK_NONE' },
+        ],
+      },
+    });
+
+    if (!media?.url) {
+      throw new Error('No image was generated.');
+    }
+
+    return { videoClipDataUri: media.url };
   }
 );

@@ -10,7 +10,6 @@
 
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
-import { textToVideo } from './text-to-video';
 
 const AudioToVideoInputSchema = z.object({
   gcsUri: z
@@ -36,8 +35,7 @@ export async function audioToVideo(input: AudioToVideoInput): Promise<AudioToVid
   return audioToVideoFlow(input);
 }
 
-// For now, this flow will ignore the audio and just use the text prompt to generate a video.
-// A more advanced implementation could transcribe the audio to text first.
+// Updated to use the audio as context for generation.
 const audioToVideoFlow = ai.defineFlow(
   {
     name: 'audioToVideoFlow',
@@ -45,8 +43,29 @@ const audioToVideoFlow = ai.defineFlow(
     outputSchema: AudioToVideoOutputSchema,
   },
   async (input) => {
-    // Note: The gcsUri is ignored in this basic implementation, but contentType is required for consistency.
-    const result = await textToVideo({ prompt: input.prompt });
-    return { videoDataUri: result.videoDataUri };
+    // A more advanced implementation could transcribe the audio to text first.
+    // For now, we will use the audio as context for generating a representative image.
+    const { media } = await ai.generate({
+      model: 'googleai/gemini-2.0-flash-preview-image-generation',
+      prompt: [
+        { media: { url: input.gcsUri, mimeType: input.contentType } },
+        { text: `Based on the provided audio, generate a new image that visually represents the sound and incorporates the following prompt: ${input.prompt}` },
+      ],
+      config: {
+        responseModalities: ['TEXT', 'IMAGE'],
+        safetySettings: [
+          { category: 'HARM_CATEGORY_HATE_SPEECH', threshold: 'BLOCK_NONE' },
+          { category: 'HARM_CATEGORY_DANGEROUS_CONTENT', threshold: 'BLOCK_NONE' },
+          { category: 'HARM_CATEGORY_HARASSMENT', threshold: 'BLOCK_NONE' },
+          { category: 'HARM_CATEGORY_SEXUALLY_EXPLICIT', threshold: 'BLOCK_NONE' },
+        ],
+      },
+    });
+    
+    if (!media?.url) {
+      throw new Error('No image was generated.');
+    }
+    
+    return { videoDataUri: media.url };
   }
 );
