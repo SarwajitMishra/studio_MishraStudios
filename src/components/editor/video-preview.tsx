@@ -11,7 +11,7 @@ import {
   Upload,
   Music,
 } from "lucide-react";
-import type { MediaType, SuggestedClip } from "@/app/page";
+import type { MediaType, SuggestedClip } from "@/lib/types";
 
 interface VideoPreviewProps {
   videoUrl: string | null;

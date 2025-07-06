@@ -4,26 +4,10 @@
  * @fileOverview AI agent that automatically generates clip ideas from a video.
  *
  * - generateClipIdeas - A function that generates clip ideas for a video.
- * - GenerateClipIdeasInput - The input type for the generateClipIdeas function.
- * - GenerateClipIdeasOutput - The return type for the generateClipIdeas function.
  */
 
 import {ai} from '@/ai/genkit';
-import {z} from 'genkit';
-
-const GenerateClipIdeasInputSchema = z.object({
-  videoDescription: z
-    .string()
-    .describe('The description of the video to generate clip ideas from.'),
-});
-export type GenerateClipIdeasInput = z.infer<typeof GenerateClipIdeasInputSchema>;
-
-const GenerateClipIdeasOutputSchema = z.object({
-  clipIdeas: z
-    .array(z.string())
-    .describe('An array of clip ideas generated from the video description.'),
-});
-export type GenerateClipIdeasOutput = z.infer<typeof GenerateClipIdeasOutputSchema>;
+import { GenerateClipIdeasInput, GenerateClipIdeasInputSchema, GenerateClipIdeasOutput, GenerateClipIdeasOutputSchema } from '@/lib/types';
 
 export async function generateClipIdeas(input: GenerateClipIdeasInput): Promise<GenerateClipIdeasOutput> {
   return generateClipIdeasFlow(input);

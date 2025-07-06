@@ -4,33 +4,11 @@
  * @fileOverview An AI agent that creates a video clip based on an image and a user prompt.
  *
  * - imageToVideo - A function that handles the video clip creation process.
- * - ImageToVideoInput - The input type for the imageToVideo function.
- * - ImageToVideoOutput - The return type for the imageToVideo function.
  */
 
 import {ai} from '@/ai/genkit';
-import {z} from 'genkit';
 import { downloadFileAsBase64 } from '@/services/storage';
-
-const ImageToVideoInputSchema = z.object({
-  gcsUri: z
-    .string()
-    .describe(
-      "The GCS URI of the image file. Expected format: 'gs://<bucket-name>/<file-name>'"
-    ),
-  prompt: z.string().describe('A natural language prompt for creating the video clip.'),
-  mimeType: z.string().describe("The MIME type of the image file."),
-});
-export type ImageToVideoInput = z.infer<typeof ImageToVideoInputSchema>;
-
-const ImageToVideoOutputSchema = z.object({
-  videoDataUri: z
-    .string()
-    .describe(
-      'A video clip data URI, created based on the user prompt and image.'
-    ),
-});
-export type ImageToVideoOutput = z.infer<typeof ImageToVideoOutputSchema>;
+import { ImageToVideoInput, ImageToVideoInputSchema, ImageToVideoOutput, ImageToVideoOutputSchema } from '@/lib/types';
 
 export async function imageToVideo(input: ImageToVideoInput): Promise<ImageToVideoOutput> {
   return imageToVideoFlow(input);

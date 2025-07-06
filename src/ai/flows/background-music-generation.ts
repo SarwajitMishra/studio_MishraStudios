@@ -4,35 +4,10 @@
  * @fileOverview Flow for generating background music or selecting from a royalty-free library.
  *
  * - generateBackgroundMusic - A function that handles the background music generation process.
- * - GenerateBackgroundMusicInput - The input type for the generateBackgroundMusic function.
- * - GenerateBackgroundMusicOutput - The return type for the generateBackgroundMusic function.
  */
 
 import {ai} from '@/ai/genkit';
-import {z} from 'genkit';
-
-const GenerateBackgroundMusicInputSchema = z.object({
-  videoDescription: z
-    .string()
-    .describe('A description of the video content to generate music for.'),
-  musicPreferences: z
-    .string()
-    .optional()
-    .describe('Optional preferences for the background music, such as genre, mood, or instruments.'),
-});
-export type GenerateBackgroundMusicInput = z.infer<typeof GenerateBackgroundMusicInputSchema>;
-
-const GenerateBackgroundMusicOutputSchema = z.object({
-  musicDataUri: z
-    .string()
-    .describe(
-      'A data URI containing the generated background music in a suitable format (e.g., audio/mpeg;base64,...).'
-    ),
-  musicDescription: z
-    .string()
-    .describe('A description of the generated music, including genre, mood, and instruments.'),
-});
-export type GenerateBackgroundMusicOutput = z.infer<typeof GenerateBackgroundMusicOutputSchema>;
+import { GenerateBackgroundMusicInput, GenerateBackgroundMusicInputSchema, GenerateBackgroundMusicOutput, GenerateBackgroundMusicOutputSchema } from '@/lib/types';
 
 export async function generateBackgroundMusic(
   input: GenerateBackgroundMusicInput

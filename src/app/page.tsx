@@ -13,26 +13,28 @@ import { Timeline } from "@/components/editor/timeline";
 import { VideoPreview } from "@/components/editor/video-preview";
 import { GenerateClipModal } from "@/components/editor/generate-clip-modal";
 import { Dialog, DialogTrigger } from "@/components/ui/dialog";
-import { Zap, Sparkles, Scissors, Type, Wand2 } from "lucide-react";
+import { Zap, Scissors, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { videoScanAnalysis } from "@/ai/flows/video-scan-analysis";
 import { generateUploadUrl } from "@/ai/flows/generate-upload-url";
-import { Card, CardTitle } from "@/components/ui/card";
+import { createClip } from "@/ai/flows/create-clip";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-
-export type MediaType = "image" | "video" | "audio";
-export type SuggestedClip = {
-  description: string;
-  startTime: number;
-  endTime: number;
-};
+import type { MediaType, SuggestedClip } from "@/lib/types";
 
 export default function Home() {
   const [videoUrl, setVideoUrl] = useState<string | null>(null);
   const [mediaType, setMediaType] = useState<MediaType | null>(null);
+  const [gcsUri, setGcsUri] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [isCreatingClip, setIsCreatingClip] = useState(false);
   const [progress, setProgress] = useState(0);
   const [suggestedClips, setSuggestedClips] = useState<SuggestedClip[]>([]);
   const [activeClip, setActiveClip] = useState<SuggestedClip | null>(null);
@@ -68,24 +70,25 @@ export default function Home() {
   const resetState = () => {
     setVideoUrl(null);
     setMediaType(null);
+    setGcsUri(null);
     setSuggestedClips([]);
     setActiveClip(null);
     setProgress(0);
-  }
+  };
 
   const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
 
     resetState();
-    
+
     const objectUrl = URL.createObjectURL(file);
     const mimeType = file.type;
 
     let detectedMediaType: MediaType | null = null;
-    if (mimeType.startsWith("image/")) detectedMediaType = 'image';
-    else if (mimeType.startsWith("video/")) detectedMediaType = 'video';
-    else if (mimeType.startsWith("audio/")) detectedMediaType = 'audio';
+    if (mimeType.startsWith("image/")) detectedMediaType = "image";
+    else if (mimeType.startsWith("video/")) detectedMediaType = "video";
+    else if (mimeType.startsWith("audio/")) detectedMediaType = "audio";
     else {
       toast({
         title: "Unsupported File Type",
@@ -94,15 +97,15 @@ export default function Home() {
       });
       return;
     }
-    
+
     setMediaType(detectedMediaType);
     setVideoUrl(objectUrl);
-    
+
     setIsLoading(true);
     setProgress(0);
 
     try {
-      const { uploadUrl, gcsUri } = await generateUploadUrl({
+      const { uploadUrl, gcsUri: newGcsUri } = await generateUploadUrl({
         fileName: file.name,
         mimeType: file.type,
       });
@@ -119,17 +122,18 @@ export default function Home() {
 
       xhr.onload = async () => {
         if (xhr.status >= 200 && xhr.status < 300) {
+          setGcsUri(newGcsUri);
           setIsLoading(false);
-          if (detectedMediaType === 'video') {
+          if (detectedMediaType === "video") {
             try {
               setIsAnalyzing(true);
               setProgress(0);
-              
-              const analysisInput = { gcsUri, mimeType };
+
+              const analysisInput = { gcsUri: newGcsUri, mimeType };
               const result = await videoScanAnalysis(analysisInput);
-              
+
               setSuggestedClips(result.suggestedClips);
-               toast({
+              toast({
                 title: "Analysis Complete!",
                 description: "We've suggested some clips for you below.",
               });
@@ -137,7 +141,10 @@ export default function Home() {
               console.error("Failed to analyze video:", error);
               toast({
                 title: "Analysis Failed",
-                description: error instanceof Error ? error.message : "We couldn't generate clip suggestions.",
+                description:
+                  error instanceof Error
+                    ? error.message
+                    : "We couldn't generate clip suggestions.",
                 variant: "destructive",
               });
             } finally {
@@ -145,44 +152,81 @@ export default function Home() {
             }
           }
         } else {
-            setIsLoading(false);
-            console.error(`Upload failed with status: ${xhr.status}`);
-            toast({
-                title: "Upload Failed",
-                description: `The server responded with status ${xhr.status}. Check your CORS settings.`,
-                variant: "destructive",
-            });
+          setIsLoading(false);
+          console.error(`Upload failed with status: ${xhr.status}`);
+          toast({
+            title: "Upload Failed",
+            description: `The server responded with status ${xhr.status}. Check your CORS settings.`,
+            variant: "destructive",
+          });
         }
       };
-      
+
       xhr.onerror = () => {
         setIsLoading(false);
         setProgress(0);
         console.error("Network error during file upload.");
         toast({
-            title: "Upload Failed",
-            description: "A network error occurred. Check your CORS configuration.",
-            variant: "destructive",
+          title: "Upload Failed",
+          description: "A network error occurred. Check your CORS configuration.",
+          variant: "destructive",
         });
       };
 
       xhr.send(file);
-
     } catch (error) {
       setIsLoading(false);
       setProgress(0);
       console.error("File upload process failed:", error);
       toast({
         title: "Upload Failed",
-        description: error instanceof Error ? error.message : "Could not upload file.",
+        description:
+          error instanceof Error ? error.message : "Could not upload file.",
         variant: "destructive",
       });
     }
   };
 
+  const handleCreateClip = async () => {
+    if (!activeClip || !gcsUri) {
+      toast({
+        title: "No clip selected",
+        description: "Please select a suggested clip first.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsCreatingClip(true);
+    try {
+      const result = await createClip({
+        gcsUri,
+        startTime: activeClip.startTime,
+        endTime: activeClip.endTime,
+      });
+
+      toast({
+        title: "Clip Created Successfully!",
+        description: `Your new clip is saved. (Simulated)`,
+      });
+    } catch (error) {
+      console.error("Failed to create clip:", error);
+      toast({
+        title: "Clip Creation Failed",
+        description:
+          error instanceof Error
+            ? error.message
+            : "Could not create the clip.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsCreatingClip(false);
+    }
+  };
+
   const showLoadingState = isLoading || isAnalyzing;
-  const loadingMessage = isAnalyzing 
-    ? `Analyzing for key moments... ${progress}%` 
+  const loadingMessage = isAnalyzing
+    ? `Analyzing for key moments... ${progress}%`
     : `Uploading your file... ${progress}%`;
 
   return (
@@ -202,60 +246,66 @@ export default function Home() {
               className="hidden"
             />
             <div className="flex-1 min-h-0">
-                <VideoPreview
-                  videoUrl={videoUrl}
-                  mediaType={mediaType}
-                  isLoading={showLoadingState}
-                  progress={showLoadingState ? progress : undefined}
-                  loadingMessage={loadingMessage}
-                  onUploadClick={handleUploadClick}
-                  clip={activeClip}
-                  onClipEnd={() => setActiveClip(null)}
-                />
+              <VideoPreview
+                videoUrl={videoUrl}
+                mediaType={mediaType}
+                isLoading={showLoadingState}
+                progress={showLoadingState ? progress : undefined}
+                loadingMessage={loadingMessage}
+                onUploadClick={handleUploadClick}
+                clip={activeClip}
+                onClipEnd={() => setActiveClip(null)}
+              />
             </div>
-            
+
             {videoUrl && !showLoadingState && (
               <div className="shrink-0 space-y-4">
-                {mediaType === 'video' && suggestedClips.length > 0 && (
+                {mediaType === "video" && suggestedClips.length > 0 && (
                   <Timeline
                     clips={suggestedClips}
                     videoUrl={videoUrl}
                     onClipSelect={setActiveClip}
+                    activeClip={activeClip}
                   />
                 )}
-                <Card className="p-4 shadow-md">
-                  <CardTitle className="text-lg mb-4">Edit Clip</CardTitle>
-                  <div className="flex flex-wrap items-center gap-2 mb-4">
-                    <Button variant="outline">
-                      <Scissors className="mr-2 h-4 w-4" />
-                      Trim
-                    </Button>
-                    <Button variant="outline">
-                      <Type className="mr-2 h-4 w-4" />
-                      Add Text
-                    </Button>
-                    <Button variant="outline">
-                      <Wand2 className="mr-2 h-4 w-4" />
-                      Effects
-                    </Button>
-                  </div>
 
-                  <div className="space-y-2">
-                    <Label htmlFor="ai-prompt">AI Prompt</Label>
-                    <div className="flex items-center gap-2">
-                      <Textarea
-                        id="ai-prompt"
-                        placeholder="e.g., 'Add a slow zoom-in effect on the current clip'"
-                        className="text-base resize-none"
-                        rows={1}
-                      />
-                      <Button>
-                        <Sparkles className="mr-2 h-4 w-4" />
-                        Apply
+                {activeClip && gcsUri && (
+                  <Card className="p-4 shadow-md bg-muted/50">
+                    <CardHeader className="p-0 pb-4">
+                      <CardTitle className="text-lg flex items-center gap-2">
+                        <Scissors className="w-5 h-5 text-primary" />
+                        Selected Clip
+                      </CardTitle>
+                      <CardDescription className="pt-1">
+                        This action simulates a backend FFmpeg process to create
+                        a new video file from the selected segment.
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent className="p-0 space-y-4">
+                      <div>
+                        <p className="text-sm font-medium">
+                          {activeClip.description}
+                        </p>
+                        <p className="text-xs text-muted-foreground mt-1">
+                          Time range: {activeClip.startTime.toFixed(2)}s —{" "}
+                          {activeClip.endTime.toFixed(2)}s
+                        </p>
+                      </div>
+                      <Button
+                        className="w-full"
+                        onClick={handleCreateClip}
+                        disabled={isLoading || isCreatingClip}
+                      >
+                        {isCreatingClip ? (
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        ) : (
+                          <Zap className="mr-2 h-4 w-4" />
+                        )}
+                        {isCreatingClip ? "Processing..." : "Create Clip"}
                       </Button>
-                    </div>
-                  </div>
-                </Card>
+                    </CardContent>
+                  </Card>
+                )}
               </div>
             )}
           </main>
@@ -270,7 +320,10 @@ export default function Home() {
               <span className="sr-only">Generate Clip</span>
             </Button>
           </DialogTrigger>
-          <GenerateClipModal setVideoUrl={setVideoUrl} setMediaType={setMediaType} />
+          <GenerateClipModal
+            setVideoUrl={setVideoUrl}
+            setMediaType={setMediaType}
+          />
         </Dialog>
       </SidebarInset>
     </SidebarProvider>

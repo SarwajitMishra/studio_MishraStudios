@@ -4,28 +4,11 @@
  * @fileOverview An AI agent that summarizes a video clip.
  *
  * - clipSummarizer - A function that handles the video summarization process.
- * - ClipSummarizerInput - The input type for the clipSummarizer function.
- * - ClipSummarizerOutput - The return type for the clipSummarizer function.
  */
 
 import {ai} from '@/ai/genkit';
-import {z} from 'genkit';
 import { downloadFileAsBase64 } from '@/services/storage';
-
-const ClipSummarizerInputSchema = z.object({
-  gcsUri: z
-    .string()
-    .describe(
-      "The GCS URI of the video clip. Expected format: 'gs://<bucket-name>/<file-name>'"
-    ),
-  mimeType: z.string().describe('The MIME type of the video file.'),
-});
-export type ClipSummarizerInput = z.infer<typeof ClipSummarizerInputSchema>;
-
-const ClipSummarizerOutputSchema = z.object({
-  summary: z.string().describe('A concise summary of the video clip.'),
-});
-export type ClipSummarizerOutput = z.infer<typeof ClipSummarizerOutputSchema>;
+import { ClipSummarizerInput, ClipSummarizerInputSchema, ClipSummarizerOutput, ClipSummarizerOutputSchema } from '@/lib/types';
 
 export async function clipSummarizer(
   input: ClipSummarizerInput

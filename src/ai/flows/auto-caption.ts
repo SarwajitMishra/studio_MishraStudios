@@ -4,28 +4,11 @@
  * @fileOverview An AI agent that generates captions for a video clip.
  *
  * - autoCaption - A function that handles the caption generation process.
- * - AutoCaptionInput - The input type for the autoCaption function.
- * - AutoCaptionOutput - The return type for the autoCaption function.
  */
 
 import {ai} from '@/ai/genkit';
-import {z} from 'genkit';
 import { downloadFileAsBase64 } from '@/services/storage';
-
-const AutoCaptionInputSchema = z.object({
-  gcsUri: z
-    .string()
-    .describe(
-      "The GCS URI of the video clip. Expected format: 'gs://<bucket-name>/<file-name>'"
-    ),
-  mimeType: z.string().describe('The MIME type of the video file.'),
-});
-export type AutoCaptionInput = z.infer<typeof AutoCaptionInputSchema>;
-
-const AutoCaptionOutputSchema = z.object({
-  captions: z.string().describe('The generated captions for the video clip.'),
-});
-export type AutoCaptionOutput = z.infer<typeof AutoCaptionOutputSchema>;
+import { AutoCaptionInput, AutoCaptionInputSchema, AutoCaptionOutput, AutoCaptionOutputSchema } from '@/lib/types';
 
 export async function autoCaption(
   input: AutoCaptionInput

@@ -4,33 +4,11 @@
  * @fileOverview An AI agent that creates a video clip based on an audio file and a user prompt.
  *
  * - audioToVideo - A function that handles the video clip creation process.
- * - AudioToVideoInput - The input type for the audioToVideo function.
- * - AudioToVideoOutput - The return type for the audioToVideo function.
  */
 
 import {ai} from '@/ai/genkit';
-import {z} from 'genkit';
 import { downloadFileAsBase64 } from '@/services/storage';
-
-const AudioToVideoInputSchema = z.object({
-  gcsUri: z
-    .string()
-    .describe(
-      "The GCS URI of the audio file. Expected format: 'gs://<bucket-name>/<file-name>'"
-    ),
-  prompt: z.string().describe('A natural language prompt for creating the video clip.'),
-  mimeType: z.string().describe('The MIME type of the audio file.'),
-});
-export type AudioToVideoInput = z.infer<typeof AudioToVideoInputSchema>;
-
-const AudioToVideoOutputSchema = z.object({
-  videoDataUri: z
-    .string()
-    .describe(
-      'A video clip data URI, created based on the user prompt and audio.'
-    ),
-});
-export type AudioToVideoOutput = z.infer<typeof AudioToVideoOutputSchema>;
+import { AudioToVideoInput, AudioToVideoInputSchema, AudioToVideoOutput, AudioToVideoOutputSchema } from '@/lib/types';
 
 export async function audioToVideo(input: AudioToVideoInput): Promise<AudioToVideoOutput> {
   return audioToVideoFlow(input);

@@ -2,28 +2,7 @@
 
 import { downloadFileAsBase64 } from '@/services/storage';
 import { ai } from '@/ai/genkit';
-import { z } from 'genkit';
-
-const VideoScanAnalysisInputSchema = z.object({
-  gcsUri: z
-    .string()
-    .describe("The GCS URI of the video file to analyze. Format: gs://<bucket>/<file>"),
-  mimeType: z
-    .string()
-    .describe("The MIME type of the video file (e.g., video/mp4)"),
-});
-export type VideoScanAnalysisInput = z.infer<typeof VideoScanAnalysisInputSchema>;
-
-const SuggestedClipSchema = z.object({
-  description: z.string().describe("Description of the clip"),
-  startTime: z.number().describe("Start time in seconds"),
-  endTime: z.number().describe("End time in seconds"),
-});
-
-const VideoScanAnalysisOutputSchema = z.object({
-  suggestedClips: z.array(SuggestedClipSchema).describe("List of suggested clips"),
-});
-export type VideoScanAnalysisOutput = z.infer<typeof VideoScanAnalysisOutputSchema>;
+import { VideoScanAnalysisInput, VideoScanAnalysisInputSchema, VideoScanAnalysisOutput, VideoScanAnalysisOutputSchema } from '@/lib/types';
 
 export async function videoScanAnalysis(input: VideoScanAnalysisInput): Promise<VideoScanAnalysisOutput> {
   return videoScanAnalysisFlow(input);

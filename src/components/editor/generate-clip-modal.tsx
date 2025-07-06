@@ -19,7 +19,7 @@ import { imageToVideo } from "@/ai/flows/image-to-video";
 import { promptToVideo } from "@/ai/flows/prompt-to-video";
 import { audioToVideo } from "@/ai/flows/audio-to-video";
 import { useToast } from "@/hooks/use-toast";
-import type { MediaType } from "@/app/page";
+import type { MediaType } from "@/lib/types";
 
 interface GenerateClipModalProps {
   setVideoUrl: (url: string | null) => void;

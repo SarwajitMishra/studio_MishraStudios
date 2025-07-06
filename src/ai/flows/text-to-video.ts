@@ -4,26 +4,10 @@
  * @fileOverview Text-to-Video flow using Gemini 2.0 Flash image generation.
  *
  * - textToVideo - A function that generates a video from a text prompt.
- * - TextToVideoInput - The input type for the textToVideo function.
- * - TextToVideoOutput - The return type for the textToVideo function.
  */
 
 import {ai} from '@/ai/genkit';
-import {z} from 'genkit';
-
-const TextToVideoInputSchema = z.object({
-  prompt: z.string().describe('The text prompt to generate a video from.'),
-});
-export type TextToVideoInput = z.infer<typeof TextToVideoInputSchema>;
-
-const TextToVideoOutputSchema = z.object({
-  videoDataUri: z
-    .string()
-    .describe(
-      'The generated video as a data URI that must include a MIME type and use Base64 encoding. Expected format: \'data:<mimetype>;base64,<encoded_data>\'.' 
-    ),
-});
-export type TextToVideoOutput = z.infer<typeof TextToVideoOutputSchema>;
+import { TextToVideoInput, TextToVideoInputSchema, TextToVideoOutput, TextToVideoOutputSchema } from '@/lib/types';
 
 export async function textToVideo(input: TextToVideoInput): Promise<TextToVideoOutput> {
   return textToVideoFlow(input);
