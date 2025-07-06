@@ -92,26 +92,40 @@ export function GenerateClipModal({
         });
         gcsUri = uploadData.gcsUri;
         
-        const xhr = new XMLHttpRequest();
-        xhr.open("PUT", uploadData.uploadUrl, true);
-        xhr.setRequestHeader("Content-Type", file.type);
-        xhr.upload.onprogress = (e) => {
-            if (e.lengthComputable) {
-                setProgress(Math.round((e.loaded / e.total) * 100));
-            }
-        };
-
         await new Promise((resolve, reject) => {
-            xhr.onload = () => {
-                if (xhr.status >= 200 && xhr.status < 300) {
-                    resolve(xhr.response);
-                } else {
-                    reject(new Error(`Upload failed: ${xhr.statusText}`));
-                }
-            };
-            xhr.onerror = () => reject(new Error("Network error during upload."));
-            xhr.send(file);
+          const xhr = new XMLHttpRequest();
+          xhr.open("PUT", uploadData.uploadUrl, true);
+          xhr.setRequestHeader("Content-Type", file.type);
+          xhr.upload.onprogress = (e) => {
+              if (e.lengthComputable) {
+                  setProgress(Math.round((e.loaded / e.total) * 100));
+              }
+          };
+          xhr.onload = () => {
+              if (xhr.status >= 200 && xhr.status < 300) {
+                  resolve(xhr.response);
+              } else {
+                  console.error(`Upload failed with status: ${xhr.status}`);
+                  toast({
+                      title: "Upload Failed",
+                      description: `The server responded with status ${xhr.status}. Please check your bucket's CORS settings.`,
+                      variant: "destructive",
+                  });
+                  reject(new Error(`Upload failed with status ${xhr.status}`));
+              }
+          };
+          xhr.onerror = () => {
+              console.error("Network error during file upload.");
+              toast({
+                  title: "Upload Failed",
+                  description: "A network error occurred. Please check your connection and bucket configuration.",
+                  variant: "destructive",
+              });
+              reject(new Error("Network error during upload."));
+          };
+          xhr.send(file);
         });
+
         setIsReadingFile(false);
       }
 
@@ -147,15 +161,8 @@ export function GenerateClipModal({
         throw new Error("No video data URI returned from the flow.");
       }
     } catch (error) {
+      // The toast is already handled in the promise, so we just log here.
       console.error(`Failed to generate video:`, error);
-      toast({
-        title: "Generation Failed",
-        description:
-          error instanceof Error
-            ? error.message
-            : "Something went wrong. Please try again.",
-        variant: "destructive",
-      });
     } finally {
       setIsGenerating(false);
       setIsReadingFile(false);
@@ -237,7 +244,7 @@ export function GenerateClipModal({
           ) : (
             <Sparkles className="mr-2 h-5 w-5" />
           )}
-          <span>{isLoading ? "Uploading..." : isGenerating ? "Generating..." : "Generate"}</span>
+          <span>{isReadingFile ? "Uploading..." : isGenerating ? "Generating..." : "Generate"}</span>
         </Button>
       </DialogFooter>
     </DialogContent>

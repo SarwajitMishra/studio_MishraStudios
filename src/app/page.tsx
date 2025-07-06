@@ -120,12 +120,25 @@ export default function Home() {
             }
           }
         } else {
-          throw new Error(`Upload failed with status: ${xhr.status}`);
+            setIsLoading(false);
+            console.error(`Upload failed with status: ${xhr.status}`);
+            toast({
+                title: "Upload Failed",
+                description: `The server responded with status ${xhr.status}. Please check your bucket's CORS settings.`,
+                variant: "destructive",
+            });
         }
       };
       
       xhr.onerror = () => {
-        throw new Error("Network error during file upload.");
+        setIsLoading(false);
+        setProgress(0);
+        console.error("Network error during file upload.");
+        toast({
+            title: "Upload Failed",
+            description: "A network error occurred. Please check your connection and bucket configuration.",
+            variant: "destructive",
+        });
       };
 
       xhr.send(file);
@@ -177,6 +190,7 @@ export default function Home() {
               <Timeline 
                 videoClips={suggestedClips}
                 videoDuration={videoDuration}
+                isProcessing={showLoadingState}
               />
             </div>
           </main>

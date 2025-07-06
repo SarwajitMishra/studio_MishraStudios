@@ -29,31 +29,43 @@ type Tool = "select" | "trim" | "pan";
 interface TimelineProps {
   videoClips: SuggestedClip[];
   videoDuration: number | null;
+  isProcessing: boolean;
 }
 
-export function Timeline({ videoClips, videoDuration }: TimelineProps) {
+export function Timeline({ videoClips, videoDuration, isProcessing }: TimelineProps) {
   const [activeTool, setActiveTool] = useState<Tool>("select");
 
-  const hasRealClips = videoClips.length > 0;
-  
-  // Default clips to show before a video is analyzed
-  const initialMockClips = [
-    { start: 5, end: 25, color: "bg-purple-500" },
-    { start: 30, end: 50, color: "bg-blue-500" },
-    { start: 65, end: 90, color: "bg-green-500" },
-  ];
+  const transformedVideoClips = (() => {
+    const hasRealClips = videoClips.length > 0;
+    
+    if (isProcessing) {
+      return []; // While uploading or analyzing, the track is empty
+    }
 
-  const transformedVideoClips = (hasRealClips && videoDuration)
-    ? videoClips.map((clip, index) => {
+    if (hasRealClips && videoDuration) {
+      // If we have clips and the video duration, map them to percentages for display
+      return videoClips.map((clip, index) => {
         const colors = ["bg-purple-500", "bg-blue-500", "bg-green-500", "bg-yellow-500", "bg-red-500"];
         return {
           start: (clip.startTime / videoDuration) * 100,
           end: (clip.endTime / videoDuration) * 100,
           color: colors[index % colors.length],
         };
-      })
-    : hasRealClips ? [] : initialMockClips;
+      });
+    }
 
+    if (hasRealClips && !videoDuration) {
+      // Clips are ready, but we're waiting for video metadata. Show empty track.
+      return [];
+    }
+
+    // Default state: show mock clips before any video is uploaded
+    return [
+      { start: 5, end: 25, color: "bg-purple-500" },
+      { start: 30, end: 50, color: "bg-blue-500" },
+      { start: 65, end: 90, color: "bg-green-500" },
+    ];
+  })();
 
   const imageClips = [
     { start: 28, end: 42, color: "bg-pink-500" },
