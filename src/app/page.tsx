@@ -15,23 +15,40 @@ import { GenerateClipModal } from "@/components/editor/generate-clip-modal";
 import { Dialog, DialogTrigger } from "@/components/ui/dialog";
 import { Zap } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { videoScanAnalysis } from "@/ai/flows/video-scan-analysis";
 
 const MAX_FILE_SIZE_MB = 100;
 const MAX_FILE_SIZE_BYTES = MAX_FILE_SIZE_MB * 1024 * 1024;
 
 export type MediaType = "image" | "video" | "audio";
+export type SuggestedClip = {
+  description: string;
+  startTime: number;
+  endTime: number;
+};
 
 export default function Home() {
   const [videoUrl, setVideoUrl] = useState<string | null>(null);
   const [mediaType, setMediaType] = useState<MediaType | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [progress, setProgress] = useState(0);
+  const [videoDuration, setVideoDuration] = useState<number | null>(null);
+  const [suggestedClips, setSuggestedClips] = useState<SuggestedClip[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
 
   const handleUploadClick = () => {
     fileInputRef.current?.click();
   };
+
+  const resetState = () => {
+    setVideoUrl(null);
+    setMediaType(null);
+    setVideoDuration(null);
+    setSuggestedClips([]);
+    setProgress(0);
+  }
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -44,20 +61,19 @@ export default function Home() {
         });
         return;
       }
-
+      
+      resetState();
+      
       const reader = new FileReader();
       reader.onloadstart = () => {
         setIsLoading(true);
-        setProgress(0);
-        setVideoUrl(null);
-        setMediaType(null);
       };
       reader.onprogress = (e) => {
         if (e.lengthComputable) {
           setProgress(Math.round((e.loaded / e.total) * 100));
         }
       };
-      reader.onload = (e) => {
+      reader.onload = async (e) => {
         const dataUri = e.target?.result as string;
         const mimeType = dataUri.split(":")[1].split(";")[0];
         
@@ -73,6 +89,27 @@ export default function Home() {
         if (detectedMediaType) {
           setMediaType(detectedMediaType);
           setVideoUrl(dataUri);
+          
+          if(detectedMediaType === 'video') {
+            try {
+              setIsAnalyzing(true);
+              const result = await videoScanAnalysis({ videoDataUri: dataUri });
+              setSuggestedClips(result.suggestedClips);
+               toast({
+                title: "Analysis Complete!",
+                description: "We've suggested some clips for you on the timeline.",
+              });
+            } catch (error) {
+              console.error("Failed to analyze video:", error);
+              toast({
+                title: "Analysis Failed",
+                description: "We couldn't generate clip suggestions for this video.",
+                variant: "destructive",
+              });
+            } finally {
+              setIsAnalyzing(false);
+            }
+          }
         } else {
            toast({
             title: "Unsupported File Type",
@@ -95,6 +132,12 @@ export default function Home() {
     }
   };
 
+  const loadingMessage = isAnalyzing 
+    ? "Analyzing video for key moments..." 
+    : "Reading your file...";
+  
+  const showLoadingState = isLoading || isAnalyzing;
+
   return (
     <SidebarProvider>
       <Sidebar>
@@ -114,12 +157,17 @@ export default function Home() {
             <VideoPreview
               videoUrl={videoUrl}
               mediaType={mediaType}
-              isLoading={isLoading}
-              progress={progress}
+              isLoading={showLoadingState}
+              progress={isLoading ? progress : undefined}
+              loadingMessage={loadingMessage}
               onUploadClick={handleUploadClick}
+              setVideoDuration={setVideoDuration}
             />
             <div className="h-[180px] sm:h-[220px] md:h-[260px] lg:h-[320px]">
-              <Timeline />
+              <Timeline 
+                videoClips={suggestedClips}
+                videoDuration={videoDuration}
+              />
             </div>
           </main>
         </div>

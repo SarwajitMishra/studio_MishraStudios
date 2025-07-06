@@ -22,17 +22,33 @@ import {
   MousePointer2,
 } from "lucide-react";
 import { TimelineTrack } from "./timeline-track";
+import type { SuggestedClip } from "@/app/page";
 
 type Tool = "select" | "trim" | "pan";
 
-export function Timeline() {
+interface TimelineProps {
+  videoClips: SuggestedClip[];
+  videoDuration: number | null;
+}
+
+export function Timeline({ videoClips, videoDuration }: TimelineProps) {
   const [activeTool, setActiveTool] = useState<Tool>("select");
 
-  const clips = [
-    { start: 5, end: 25, color: "bg-purple-500" },
-    { start: 30, end: 50, color: "bg-blue-500" },
-    { start: 65, end: 90, color: "bg-green-500" },
-  ];
+  const transformedVideoClips = (videoDuration && videoClips.length > 0)
+    ? videoClips.map((clip, index) => {
+        const colors = ["bg-purple-500", "bg-blue-500", "bg-green-500", "bg-yellow-500", "bg-red-500"];
+        return {
+          start: (clip.startTime / videoDuration) * 100,
+          end: (clip.endTime / videoDuration) * 100,
+          color: colors[index % colors.length],
+        };
+      })
+    : [
+        { start: 5, end: 25, color: "bg-purple-500" },
+        { start: 30, end: 50, color: "bg-blue-500" },
+        { start: 65, end: 90, color: "bg-green-500" },
+      ];
+
   const imageClips = [
     { start: 28, end: 42, color: "bg-pink-500" },
     { start: 55, end: 70, color: "bg-indigo-500" },
@@ -109,7 +125,7 @@ export function Timeline() {
         </div>
         <ScrollArea className="flex-1">
           <div className="relative">
-            <TimelineTrack type="video" label="Video" clips={clips} />
+            <TimelineTrack type="video" label="Video" clips={transformedVideoClips} />
             <TimelineTrack type="image" label="Images" clips={imageClips} />
             <TimelineTrack
               type="audio"

@@ -1,3 +1,4 @@
+import { useRef } from "react";
 import Image from "next/image";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
 import { Button } from "@/components/ui/button";
@@ -23,8 +24,10 @@ interface VideoPreviewProps {
   videoUrl: string | null;
   mediaType: MediaType | null;
   isLoading: boolean;
-  progress: number;
+  progress?: number;
+  loadingMessage?: string;
   onUploadClick: () => void;
+  setVideoDuration: (duration: number | null) => void;
 }
 
 export function VideoPreview({
@@ -32,11 +35,20 @@ export function VideoPreview({
   mediaType,
   isLoading,
   progress,
+  loadingMessage,
   onUploadClick,
+  setVideoDuration,
 }: VideoPreviewProps) {
+  const videoRef = useRef<HTMLVideoElement>(null);
   const showPlaceholder = !videoUrl && !isLoading;
   const showLoadingState = isLoading;
   const showMedia = videoUrl && !isLoading;
+
+  const handleLoadedMetadata = () => {
+    if (videoRef.current) {
+      setVideoDuration(videoRef.current.duration);
+    }
+  };
 
   const renderMedia = () => {
     if (!showMedia) return null;
@@ -55,7 +67,9 @@ export function VideoPreview({
       case "video":
         return (
           <video
+            ref={videoRef}
             src={videoUrl!}
+            onLoadedMetadata={handleLoadedMetadata}
             controls
             autoPlay
             className="w-full h-full object-contain rounded-lg"
@@ -90,13 +104,13 @@ export function VideoPreview({
             className="w-full rounded-lg bg-muted flex items-center justify-center"
           >
             {showLoadingState && (
-              <div className="w-full max-w-sm flex flex-col items-center justify-center gap-4 text-primary-foreground p-4">
+              <div className="w-full max-w-sm flex flex-col items-center justify-center gap-4 text-center p-4">
                 <Loader2 className="w-12 h-12 animate-spin text-primary" />
-                <p className="text-lg font-medium text-foreground">
-                  Reading your file...
+                <p className="text-lg font-medium text-foreground mt-4">
+                  {loadingMessage || "Processing..."}
                 </p>
-                <Progress value={progress} className="w-full" />
-                <p className="text-sm text-muted-foreground">
+                {progress !== undefined && <Progress value={progress} className="w-full mt-2" />}
+                <p className="text-sm text-muted-foreground mt-1">
                   This may take a moment for larger files.
                 </p>
               </div>
