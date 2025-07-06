@@ -46,10 +46,10 @@ export function VideoPreview({
     if (videoElement && videoUrl && mediaType === 'video') {
       const newSrc = clip 
         ? `${videoUrl}#t=${clip.startTime},${clip.endTime}` 
-        // When clip is null, revert to original blob URL if it exists, otherwise the base videoUrl
-        : videoElement.src.startsWith('blob:') ? videoElement.src.split('#')[0] : videoUrl;
+        // When clip is null, revert to the original full video URL
+        : videoUrl;
 
-      // Only update src if it has actually changed to avoid reloads
+      // Only update src if it has actually changed to avoid reloads and flashes
       if (videoElement.currentSrc !== newSrc) {
         videoElement.src = newSrc;
       }
@@ -70,6 +70,7 @@ export function VideoPreview({
         if (videoElement.duration && isFinite(videoElement.duration)) {
             onDurationChange(videoElement.duration);
         }
+        // It's possible the user paused it, but when new metadata loads, we should try to play.
         videoElement.play().catch(e => console.error("Autoplay after load was prevented:", e));
       };
 
