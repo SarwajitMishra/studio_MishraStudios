@@ -1,20 +1,22 @@
 'use server';
 
+import {config} from 'dotenv';
+config(); // Ensure environment variables are loaded
+
 import { Storage } from '@google-cloud/storage';
 
-// By not providing credentials, the client library will use
-// Application Default Credentials (ADC). This is the recommended approach
-// for authenticating in a Google Cloud environment like Firebase App Hosting.
-// When running locally, this relies on `gcloud auth application-default login`.
-const storage = new Storage();
-
+const projectId = process.env.GOOGLE_CLOUD_PROJECT_ID;
 const bucketName = process.env.GCS_BUCKET_NAME;
 
-if (!bucketName) {
+if (!projectId || !bucketName) {
   if (process.env.NODE_ENV === 'development') {
-    console.warn("GCS_BUCKET_NAME environment variable is not set. File uploads will fail. Please set it in your .env file.");
+    console.warn("GOOGLE_CLOUD_PROJECT_ID or GCS_BUCKET_NAME environment variable is not set. File uploads will fail. Please set them in your .env file.");
   }
 }
+
+// Explicitly provide the projectId to the Storage client. This helps resolve
+// the correct project and credentials, especially in local development environments.
+const storage = new Storage({ projectId });
 
 /**
  * Generates a v4 signed URL for uploading a file to Google Cloud Storage.
