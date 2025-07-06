@@ -40,6 +40,10 @@ const autoCaptionFlow = ai.defineFlow(
     outputSchema: AutoCaptionOutputSchema,
   },
   async (input) => {
+    if (!input || !input.gcsUri || !input.mimeType) {
+      throw new Error(`Invalid input provided to autoCaptionFlow. Received: ${JSON.stringify(input)}`);
+    }
+
     const base64Video = await downloadFileAsBase64(input.gcsUri);
 
     const { output } = await ai.generate({

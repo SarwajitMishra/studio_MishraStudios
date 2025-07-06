@@ -43,6 +43,10 @@ const imageToVideoFlow = ai.defineFlow(
     outputSchema: ImageToVideoOutputSchema,
   },
   async (input) => {
+    if (!input || !input.gcsUri || !input.mimeType) {
+      throw new Error(`Invalid input provided to imageToVideoFlow. Received: ${JSON.stringify(input)}`);
+    }
+
     const base64Image = await downloadFileAsBase64(input.gcsUri);
     const {media} = await ai.generate({
       model: 'googleai/gemini-2.0-flash-preview-image-generation',

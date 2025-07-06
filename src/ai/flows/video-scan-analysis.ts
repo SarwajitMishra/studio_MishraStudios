@@ -48,6 +48,13 @@ const videoScanAnalysisFlow = ai.defineFlow(
     outputSchema: VideoScanAnalysisOutputSchema,
   },
   async (input) => {
+    if (!input || !input.gcsUri || !input.mimeType) {
+      throw new Error(`Invalid input provided to videoScanAnalysisFlow. Received: ${JSON.stringify(input)}`);
+    }
+    if (!input.mimeType.startsWith('video/')) {
+      throw new Error(`Unsupported mimeType for video analysis: ${input.mimeType}`);
+    }
+
     const base64Video = await downloadFileAsBase64(input.gcsUri);
     
     const { output } = await ai.generate({

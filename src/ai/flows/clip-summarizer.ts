@@ -40,6 +40,10 @@ const clipSummarizerFlow = ai.defineFlow(
     outputSchema: ClipSummarizerOutputSchema,
   },
   async (input) => {
+    if (!input || !input.gcsUri || !input.mimeType) {
+      throw new Error(`Invalid input provided to clipSummarizerFlow. Received: ${JSON.stringify(input)}`);
+    }
+
     const base64Video = await downloadFileAsBase64(input.gcsUri);
     const { output } = await ai.generate({
       output: { schema: ClipSummarizerOutputSchema },
