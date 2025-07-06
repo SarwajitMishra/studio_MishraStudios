@@ -101,11 +101,12 @@ export default function Home() {
           setIsLoading(false);
           if (detectedMediaType === 'video') {
             try {
-              setIsAnalyzing(true); // Set loading state specifically for analysis
+              setIsAnalyzing(true);
+              const contentType = file.type;
 
-              // Pass the file.type directly as the contentType
-
-              const result = await videoScanAnalysis({ gcsUri, contentType: file.type });
+              console.log('Client is calling videoScanAnalysis with:', { gcsUri, contentType });
+              const result = await videoScanAnalysis({ gcsUri, contentType });
+              
               setSuggestedClips(result.suggestedClips);
                toast({
                 title: "Analysis Complete!",

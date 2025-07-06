@@ -47,10 +47,17 @@ const videoScanAnalysisFlow = ai.defineFlow(
     outputSchema: VideoScanAnalysisOutputSchema,
   },
   async (input) => {
+    // Per your suggestion, logging the exact media object being sent to Gemini.
+    console.log("Sending media to Gemini:", {
+      url: input.gcsUri,
+      mimeType: input.contentType,
+    });
+
     const { output } = await ai.generate({
       output: { schema: VideoScanAnalysisOutputSchema },
       prompt: [
         { text: `You are an AI video analysis expert. Your task is to analyze the uploaded video and suggest key moments or scenes that might be interesting for the user to include in their video edit. For each suggestion, provide a concise description and its start and end times in seconds. Focus on identifying highlights, memorable scenes, or moments that would capture viewer attention. Limit the list to no more than 5 suggestions.` },
+        // Correctly passing the media object as an element within the prompt array.
         { media: { url: input.gcsUri, mimeType: input.contentType } },
       ],
     });

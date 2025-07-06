@@ -39,7 +39,7 @@ export async function generateV4UploadSignedUrl(fileName: string, contentType: s
   };
 
   const [uploadUrl] = await file.getSignedUrl(options);
-  const gcsUri = `gs://${bucketName}/${fileName}`;
+  const gcsUri = `${bucketName}/${fileName}`;
 
   return { uploadUrl, gcsUri };
 }
