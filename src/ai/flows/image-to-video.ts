@@ -43,6 +43,9 @@ const imageToVideoFlow = ai.defineFlow(
     outputSchema: ImageToVideoOutputSchema,
   },
   async (input) => {
+    if (!input || !input.gcsUri) {
+      throw new Error('Invalid input: GCS URI is missing for image to video conversion.');
+    }
     const base64Image = await downloadFileAsBase64(input.gcsUri);
     const {media} = await ai.generate({
       model: 'googleai/gemini-2.0-flash-preview-image-generation',

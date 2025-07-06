@@ -40,6 +40,9 @@ const clipSummarizerFlow = ai.defineFlow(
     outputSchema: ClipSummarizerOutputSchema,
   },
   async (input) => {
+    if (!input || !input.gcsUri) {
+      throw new Error('Invalid input: GCS URI is missing for clip summarization.');
+    }
     const base64Video = await downloadFileAsBase64(input.gcsUri);
     const { output } = await ai.generate({
       output: { schema: ClipSummarizerOutputSchema },

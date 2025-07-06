@@ -44,6 +44,9 @@ const audioToVideoFlow = ai.defineFlow(
     outputSchema: AudioToVideoOutputSchema,
   },
   async (input) => {
+    if (!input || !input.gcsUri) {
+      throw new Error('Invalid input: GCS URI is missing for audio to video conversion.');
+    }
     const base64Audio = await downloadFileAsBase64(input.gcsUri);
     // A more advanced implementation could transcribe the audio to text first.
     // For now, we will use the audio as context for generating a representative image.

@@ -40,6 +40,9 @@ const autoCaptionFlow = ai.defineFlow(
     outputSchema: AutoCaptionOutputSchema,
   },
   async (input) => {
+    if (!input || !input.gcsUri) {
+      throw new Error('Invalid input: GCS URI is missing for auto-captioning.');
+    }
     const base64Video = await downloadFileAsBase64(input.gcsUri);
 
     const { output } = await ai.generate({

@@ -48,6 +48,9 @@ const videoScanAnalysisFlow = ai.defineFlow(
     outputSchema: VideoScanAnalysisOutputSchema,
   },
   async (input) => {
+    if (!input || !input.gcsUri) {
+      throw new Error('Invalid input: GCS URI is missing for video scan analysis.');
+    }
     const base64Video = await downloadFileAsBase64(input.gcsUri);
     
     const { output } = await ai.generate({
