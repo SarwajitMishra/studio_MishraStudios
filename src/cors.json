@@ -4,7 +4,8 @@
       "http://localhost:3000",
       "http://localhost:9002",
       "https://*.firebaseapp.com",
-      "https://*.web.app"
+      "https://*.web.app",
+      "https://6000-firebase-studio-1751723903767.cluster-sumfw3zmzzhzkx4mpvz3ogth4y.cloudworkstations.dev"
     ],
     "method": ["PUT", "GET", "HEAD"],
     "responseHeader": [
