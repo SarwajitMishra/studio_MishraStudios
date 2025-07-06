@@ -21,10 +21,10 @@ const storage = new Storage({ projectId });
 /**
  * Generates a v4 signed URL for uploading a file to Google Cloud Storage.
  * @param fileName The name of the file to upload.
- * @param contentType The MIME type of the file.
+ * @param mimeType The MIME type of the file.
  * @returns A promise that resolves to the signed URL and the GCS URI.
  */
-export async function generateV4UploadSignedUrl(fileName: string, contentType: string): Promise<{ uploadUrl: string; gcsUri: string }> {
+export async function generateV4UploadSignedUrl(fileName: string, mimeType: string): Promise<{ uploadUrl: string; gcsUri: string }> {
   if (!bucketName) {
     throw new Error("GCS_BUCKET_NAME environment variable is not set.");
   }
@@ -35,7 +35,7 @@ export async function generateV4UploadSignedUrl(fileName: string, contentType: s
     version: 'v4' as const,
     action: 'write' as const,
     expires: Date.now() + 15 * 60 * 1000, // 15 minutes
-    contentType,
+    contentType: mimeType,
   };
 
   const [uploadUrl] = await file.getSignedUrl(options);
@@ -50,10 +50,28 @@ export async function generateV4UploadSignedUrl(fileName: string, contentType: s
  * @returns A promise that resolves to the Base64 encoded content of the file.
  */
 export async function downloadFileAsBase64(gcsUri: string): Promise<string> {
-  const [bucketNameFromUri, ...filePathParts] = gcsUri.replace('gs://', '').split('/');
-  const fileName = filePathParts.join('/');
+    if (!gcsUri || !gcsUri.startsWith('gs://')) {
+        throw new Error(`Invalid GCS URI: URI must start with 'gs://'. Received: '${gcsUri}'`);
+    }
+    
+    const path = gcsUri.substring('gs://'.length);
+    const slashIndex = path.indexOf('/');
+    
+    if (slashIndex === -1 || slashIndex === 0 || slashIndex === path.length - 1) {
+        throw new Error(`Invalid GCS URI format: Cannot find bucket and file name. Received: '${gcsUri}'`);
+    }
 
-  const file = storage.bucket(bucketNameFromUri).file(fileName);
-  const [contents] = await file.download();
-  return contents.toString('base64');
+    const bucketNameFromUri = path.substring(0, slashIndex);
+    const fileName = path.substring(slashIndex + 1);
+    
+    if (!bucketNameFromUri) {
+        throw new Error(`Invalid GCS URI: Bucket name is missing. Received: '${gcsUri}'`);
+    }
+    if (!fileName) {
+        throw new Error(`Invalid GCS URI: File name is missing. Received: '${gcsUri}'`);
+    }
+
+    const file = storage.bucket(bucketNameFromUri).file(fileName);
+    const [contents] = await file.download();
+    return contents.toString('base64');
 }
