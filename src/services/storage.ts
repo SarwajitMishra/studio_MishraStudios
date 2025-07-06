@@ -50,8 +50,6 @@ export async function generateV4UploadSignedUrl(fileName: string, mimeType: stri
  * @returns A promise that resolves to the Base64 encoded content of the file.
  */
 export async function downloadFileAsBase64(gcsUri: string): Promise<string> {
-    console.log(`[DEBUG] downloadFileAsBase64 received gcsUri: '${gcsUri}'`);
-
     const match = gcsUri.match(/^gs:\/\/([^\/]+)\/(.+)$/);
     if (!match) {
         throw new Error(`Invalid GCS URI format. Expected 'gs://<bucket-name>/<file-name>'. Received: '${gcsUri}'`);
@@ -59,16 +57,13 @@ export async function downloadFileAsBase64(gcsUri: string): Promise<string> {
 
     const bucketNameFromUri = match[1];
     const fileName = match[2];
-    
-    console.log(`[DEBUG] Parsed bucket: '${bucketNameFromUri}', file: '${fileName}'`);
 
     const file = storage.bucket(bucketNameFromUri).file(fileName);
     try {
         const [contents] = await file.download();
-        console.log(`[DEBUG] Successfully downloaded file '${fileName}' from bucket '${bucketNameFromUri}'.`);
         return contents.toString('base64');
     } catch (error: any) {
-        console.error(`[DEBUG] GCS download failed. Error: ${error.message}`, { gcsUri });
+        console.error(`GCS download failed for URI: ${gcsUri}. Error: ${error.message}`);
         throw new Error(`Failed to download file from GCS: ${error.message}`);
     }
 }

@@ -54,11 +54,9 @@ export default function Home() {
 
     resetState();
     
-    // For local preview
     const objectUrl = URL.createObjectURL(file);
     const mimeType = file.type;
-    // DEBUG: Log file type on selection
-    console.log(`[DEBUG] File selected. Name: ${file.name}, Type: ${mimeType}`);
+
     let detectedMediaType: MediaType | null = null;
     if (mimeType.startsWith("image/")) detectedMediaType = 'image';
     else if (mimeType.startsWith("video/")) detectedMediaType = 'video';
@@ -104,13 +102,8 @@ export default function Home() {
           if (detectedMediaType === 'video') {
             try {
               setIsAnalyzing(true);
-              const mimeType = file.type;
-
-              // DEBUG: Log what the client is about to send.
-              console.log('[DEBUG] Client calling videoScanAnalysis with:', { gcsUri, mimeType });
               
               if (!mimeType) {
-                console.error('[DEBUG] CRITICAL: Client is attempting to call videoScanAnalysis with a null or empty mimeType.');
                 toast({
                   title: "Analysis Failed",
                   description: "Cannot analyze video because its content type is unknown.",
@@ -131,7 +124,7 @@ export default function Home() {
               console.error("Failed to analyze video:", error);
               toast({
                 title: "Analysis Failed",
-                description: "We couldn't generate clip suggestions for this video.",
+                description: error instanceof Error ? error.message : "We couldn't generate clip suggestions for this video.",
                 variant: "destructive",
               });
             } finally {
