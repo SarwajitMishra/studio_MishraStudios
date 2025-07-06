@@ -112,6 +112,8 @@ export default function Home() {
                 setIsAnalyzing(false);
                 return;
               }
+              
+              console.log("[CLIENT-DEBUG] Calling videoScanAnalysis with:", { gcsUri, mimeType });
 
               const result = await videoScanAnalysis({ gcsUri, mimeType });
               

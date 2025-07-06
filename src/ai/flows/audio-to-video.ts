@@ -33,6 +33,11 @@ const AudioToVideoOutputSchema = z.object({
 export type AudioToVideoOutput = z.infer<typeof AudioToVideoOutputSchema>;
 
 export async function audioToVideo(input: AudioToVideoInput): Promise<AudioToVideoOutput> {
+  console.log('[SERVER-DEBUG] audioToVideo flow invoked with input:', JSON.stringify(input, null, 2));
+  if (!input || !input.gcsUri || !input.mimeType) {
+    console.error('[SERVER-ERROR] Invalid input received in audioToVideo:', input);
+    throw new Error('Invalid input: The GCS URI or MIME type is missing for audio to video conversion.');
+  }
   return audioToVideoFlow(input);
 }
 
@@ -44,6 +49,7 @@ const audioToVideoFlow = ai.defineFlow(
     outputSchema: AudioToVideoOutputSchema,
   },
   async (input) => {
+    console.log('[SERVER-DEBUG] audioToVideoFlow started with input:', JSON.stringify(input, null, 2));
     if (!input || !input.gcsUri) {
       throw new Error('Invalid input: GCS URI is missing for audio to video conversion.');
     }

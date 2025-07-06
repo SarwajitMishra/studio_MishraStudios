@@ -33,6 +33,11 @@ const PromptToVideoOutputSchema = z.object({
 export type PromptToVideoOutput = z.infer<typeof PromptToVideoOutputSchema>;
 
 export async function promptToVideo(input: PromptToVideoInput): Promise<PromptToVideoOutput> {
+  console.log('[SERVER-DEBUG] promptToVideo flow invoked with input:', JSON.stringify(input, null, 2));
+  if (!input || !input.gcsUri || !input.mimeType) {
+    console.error('[SERVER-ERROR] Invalid input received in promptToVideo:', input);
+    throw new Error('Invalid input: The GCS URI or MIME type is missing for prompt to video conversion.');
+  }
   return promptToVideoFlow(input);
 }
 
@@ -44,6 +49,7 @@ const promptToVideoFlow = ai.defineFlow(
     outputSchema: PromptToVideoOutputSchema,
   },
   async (input) => {
+    console.log('[SERVER-DEBUG] promptToVideoFlow started with input:', JSON.stringify(input, null, 2));
     if (!input || !input.gcsUri) {
       throw new Error('Invalid input: GCS URI is missing for prompt to video conversion.');
     }

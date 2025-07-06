@@ -30,6 +30,11 @@ export type AutoCaptionOutput = z.infer<typeof AutoCaptionOutputSchema>;
 export async function autoCaption(
   input: AutoCaptionInput
 ): Promise<AutoCaptionOutput> {
+  console.log('[SERVER-DEBUG] autoCaption flow invoked with input:', JSON.stringify(input, null, 2));
+  if (!input || !input.gcsUri || !input.mimeType) {
+    console.error('[SERVER-ERROR] Invalid input received in autoCaption:', input);
+    throw new Error('Invalid input: The GCS URI or MIME type is missing for auto-captioning.');
+  }
   return autoCaptionFlow(input);
 }
 
@@ -40,6 +45,7 @@ const autoCaptionFlow = ai.defineFlow(
     outputSchema: AutoCaptionOutputSchema,
   },
   async (input) => {
+    console.log('[SERVER-DEBUG] autoCaptionFlow started with input:', JSON.stringify(input, null, 2));
     if (!input || !input.gcsUri) {
       throw new Error('Invalid input: GCS URI is missing for auto-captioning.');
     }
