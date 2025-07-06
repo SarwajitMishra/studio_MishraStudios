@@ -13,10 +13,13 @@ import { Timeline } from "@/components/editor/timeline";
 import { VideoPreview } from "@/components/editor/video-preview";
 import { GenerateClipModal } from "@/components/editor/generate-clip-modal";
 import { Dialog, DialogTrigger } from "@/components/ui/dialog";
-import { Zap } from "lucide-react";
+import { Zap, Sparkles, Scissors, Type, Wand2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { videoScanAnalysis } from "@/ai/flows/video-scan-analysis";
 import { generateUploadUrl } from "@/ai/flows/generate-upload-url";
+import { Card, CardTitle } from "@/components/ui/card";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 
 export type MediaType = "image" | "video" | "audio";
 export type SuggestedClip = {
@@ -211,12 +214,49 @@ export default function Home() {
                 />
             </div>
             
-            {videoUrl && mediaType === 'video' && suggestedClips.length > 0 && !showLoadingState && (
-              <Timeline
-                clips={suggestedClips}
-                videoUrl={videoUrl}
-                onClipSelect={setActiveClip}
-              />
+            {videoUrl && !showLoadingState && (
+              <div className="shrink-0 space-y-4">
+                {mediaType === 'video' && suggestedClips.length > 0 && (
+                  <Timeline
+                    clips={suggestedClips}
+                    videoUrl={videoUrl}
+                    onClipSelect={setActiveClip}
+                  />
+                )}
+                <Card className="p-4 shadow-md">
+                  <CardTitle className="text-lg mb-4">Edit Clip</CardTitle>
+                  <div className="flex flex-wrap items-center gap-2 mb-4">
+                    <Button variant="outline">
+                      <Scissors className="mr-2 h-4 w-4" />
+                      Trim
+                    </Button>
+                    <Button variant="outline">
+                      <Type className="mr-2 h-4 w-4" />
+                      Add Text
+                    </Button>
+                    <Button variant="outline">
+                      <Wand2 className="mr-2 h-4 w-4" />
+                      Effects
+                    </Button>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="ai-prompt">AI Prompt</Label>
+                    <div className="flex items-center gap-2">
+                      <Textarea
+                        id="ai-prompt"
+                        placeholder="e.g., 'Add a slow zoom-in effect on the current clip'"
+                        className="text-base resize-none"
+                        rows={1}
+                      />
+                      <Button>
+                        <Sparkles className="mr-2 h-4 w-4" />
+                        Apply
+                      </Button>
+                    </div>
+                  </div>
+                </Card>
+              </div>
             )}
           </main>
         </div>
