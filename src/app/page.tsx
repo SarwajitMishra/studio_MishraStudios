@@ -24,6 +24,9 @@ export type SuggestedClip = {
   endTime: number;
 };
 
+const MAX_FILE_SIZE_MB = 100;
+const MAX_FILE_SIZE_BYTES = MAX_FILE_SIZE_MB * 1024 * 1024;
+
 export default function Home() {
   const [videoUrl, setVideoUrl] = useState<string | null>(null);
   const [mediaType, setMediaType] = useState<MediaType | null>(null);
@@ -50,6 +53,15 @@ export default function Home() {
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
+      if (file.size > MAX_FILE_SIZE_BYTES) {
+        toast({
+          title: "File Too Large",
+          description: `For browser stability, please upload a file smaller than ${MAX_FILE_SIZE_MB}MB.`,
+          variant: "destructive",
+        });
+        return;
+      }
+
       resetState();
       
       const reader = new FileReader();
