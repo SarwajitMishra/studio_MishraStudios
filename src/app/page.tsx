@@ -57,6 +57,8 @@ export default function Home() {
     // For local preview
     const objectUrl = URL.createObjectURL(file);
     const mimeType = file.type;
+    // DEBUG: Log file type on selection
+    console.log(`[DEBUG] File selected. Name: ${file.name}, Type: ${mimeType}`);
     let detectedMediaType: MediaType | null = null;
     if (mimeType.startsWith("image/")) detectedMediaType = 'image';
     else if (mimeType.startsWith("video/")) detectedMediaType = 'video';
@@ -104,7 +106,20 @@ export default function Home() {
               setIsAnalyzing(true);
               const contentType = file.type;
 
-              console.log('Client is calling videoScanAnalysis with:', { gcsUri, contentType });
+              // DEBUG: Log what the client is about to send.
+              console.log('[DEBUG] Client calling videoScanAnalysis with:', { gcsUri, contentType });
+              
+              if (!contentType) {
+                console.error('[DEBUG] CRITICAL: Client is attempting to call videoScanAnalysis with a null or empty contentType.');
+                toast({
+                  title: "Analysis Failed",
+                  description: "Cannot analyze video because its content type is unknown.",
+                  variant: "destructive",
+                });
+                setIsAnalyzing(false);
+                return;
+              }
+
               const result = await videoScanAnalysis({ gcsUri, contentType });
               
               setSuggestedClips(result.suggestedClips);
@@ -125,7 +140,11 @@ export default function Home() {
           }
         } else {
             setIsLoading(false);
-            console.error(`Upload failed with status: ${xhr.status}`);
+            console.error(`Upload failed with status: ${xhr.status}`, {
+                status: xhr.status,
+                statusText: xhr.statusText,
+                response: xhr.responseText
+            });
             toast({
                 title: "Upload Failed",
                 description: `The server responded with status ${xhr.status}. Please check your bucket's CORS settings.`,
