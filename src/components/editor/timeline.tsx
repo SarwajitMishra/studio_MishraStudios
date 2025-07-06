@@ -36,14 +36,13 @@ export function Timeline({ videoClips, videoDuration, isProcessing }: TimelinePr
   const [activeTool, setActiveTool] = useState<Tool>("select");
 
   const transformedVideoClips = (() => {
-    const hasRealClips = videoClips.length > 0;
-    
+    // If we are currently processing (uploading/analyzing), show an empty track.
     if (isProcessing) {
-      return []; // While uploading or analyzing, the track is empty
+      return [];
     }
-
-    if (hasRealClips && videoDuration) {
-      // If we have clips and the video duration, map them to percentages for display
+    
+    // If we have both the clips from the AI and the video's duration, map them to the timeline.
+    if (videoClips.length > 0 && videoDuration) {
       return videoClips.map((clip, index) => {
         const colors = ["bg-purple-500", "bg-blue-500", "bg-green-500", "bg-yellow-500", "bg-red-500"];
         return {
@@ -54,12 +53,13 @@ export function Timeline({ videoClips, videoDuration, isProcessing }: TimelinePr
       });
     }
 
-    if (hasRealClips && !videoDuration) {
-      // Clips are ready, but we're waiting for video metadata. Show empty track.
+    // If analysis is done but we are waiting for video metadata, show an empty track.
+    // This prevents a flash of mock data.
+    if (videoClips.length > 0 && !videoDuration) {
       return [];
     }
 
-    // Default state: show mock clips before any video is uploaded
+    // Default state: show mock clips only if no video has been uploaded/analyzed yet.
     return [
       { start: 5, end: 25, color: "bg-purple-500" },
       { start: 30, end: 50, color: "bg-blue-500" },

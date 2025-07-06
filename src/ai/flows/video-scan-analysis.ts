@@ -1,39 +1,27 @@
 'use server';
 
-/**
- * @fileOverview Analyzes an uploaded video to suggest key moments or scenes.
- *
- * - videoScanAnalysis - A function that handles the video scan analysis process.
- * - VideoScanAnalysisInput - The input type for the videoScanAnalysis function.
- * - VideoScanAnalysisOutput - The return type for the videoScanAnalysis function.
- */
-
-import {ai} from '@/ai/genkit';
-import {z} from 'genkit';
 import { downloadFileAsBase64 } from '@/services/storage';
+import { ai } from '@/ai/genkit';
+import { z } from 'genkit';
 
 const VideoScanAnalysisInputSchema = z.object({
   gcsUri: z
     .string()
-    .describe(
-      "The GCS URI of the video file to analyze. Expected format: 'gs://<bucket-name>/<file-name>'"
-    ),
-  mimeType: z.string().describe('The MIME type of the video file.'),
+    .describe("The GCS URI of the video file to analyze. Format: gs://<bucket>/<file>"),
+  mimeType: z
+    .string()
+    .describe("The MIME type of the video file (e.g., video/mp4)"),
 });
 export type VideoScanAnalysisInput = z.infer<typeof VideoScanAnalysisInputSchema>;
 
 const SuggestedClipSchema = z.object({
-  description: z
-    .string()
-    .describe('A concise description of the suggested clip.'),
-  startTime: z.number().describe('The start time of the clip in seconds.'),
-  endTime: z.number().describe('The end time of the clip in seconds.'),
+  description: z.string().describe("Description of the clip"),
+  startTime: z.number().describe("Start time in seconds"),
+  endTime: z.number().describe("End time in seconds"),
 });
 
 const VideoScanAnalysisOutputSchema = z.object({
-  suggestedClips: z
-    .array(SuggestedClipSchema)
-    .describe('An array of suggested clip ideas based on the video content.'),
+  suggestedClips: z.array(SuggestedClipSchema).describe("List of suggested clips"),
 });
 export type VideoScanAnalysisOutput = z.infer<typeof VideoScanAnalysisOutputSchema>;
 
@@ -48,22 +36,44 @@ const videoScanAnalysisFlow = ai.defineFlow(
     outputSchema: VideoScanAnalysisOutputSchema,
   },
   async (input) => {
-    if (!input || !input.gcsUri || !input.mimeType) {
-      throw new Error(`Invalid input provided to videoScanAnalysisFlow. Received: ${JSON.stringify(input)}`);
-    }
-    if (!input.mimeType.startsWith('video/')) {
-      throw new Error(`Unsupported mimeType for video analysis: ${input.mimeType}`);
+    if (!input?.gcsUri || !input?.mimeType?.startsWith('video/')) {
+      throw new Error(`Invalid input: ${JSON.stringify(input)}`);
     }
 
-    const base64Video = await downloadFileAsBase64(input.gcsUri);
-    
-    const { output } = await ai.generate({
-      output: { schema: VideoScanAnalysisOutputSchema },
+    // Download video from GCS and convert to base64
+    const videoBase64 = await downloadFileAsBase64(input.gcsUri);
+
+    const result = await ai.generate({
       prompt: [
-        { text: `You are an AI video analysis expert. Your task is to analyze the uploaded video and suggest key moments or scenes that might be interesting for the user to include in their video edit. For each suggestion, provide a concise description and its start and end times in seconds. Focus on identifying highlights, memorable scenes, or moments that would capture viewer attention. Limit the list to no more than 5 suggestions.` },
-        { media: { inlineData: { data: base64Video, mimeType: input.mimeType } } },
+        {
+          text: `You are an AI video analysis expert. Analyze the uploaded video and suggest up to 5 key moments. Each suggestion should include:
+- startTime (in seconds)
+- endTime (in seconds)
+- description (short)
+
+Respond ONLY in this JSON format:
+{
+  "suggestedClips": [
+    {
+      "description": "Intro scene",
+      "startTime": 0,
+      "endTime": 15
+    }
+  ]
+}`,
+        },
+        {
+          media: {
+            url: `data:${input.mimeType};base64,${videoBase64}`,
+            contentType: input.mimeType
+          },
+        },
       ],
+      output: {
+        schema: VideoScanAnalysisOutputSchema,
+      },
     });
-    return output!;
+
+    return result.output!;
   }
 );

@@ -57,10 +57,20 @@ export default function Home() {
     const objectUrl = URL.createObjectURL(file);
     const mimeType = file.type;
 
+    const fileMimeType = file.type; // ✅ SCOPED FIX
+
+    console.log("Uploaded file:", file);
+    console.log("mimeType:", mimeType);
+
+
     let detectedMediaType: MediaType | null = null;
-    if (mimeType.startsWith("image/")) detectedMediaType = 'image';
-    else if (mimeType.startsWith("video/")) detectedMediaType = 'video';
-    else if (mimeType.startsWith("audio/")) detectedMediaType = 'audio';
+    if (typeof mimeType === "string") {
+      if (mimeType.startsWith("image/")) detectedMediaType = 'image';
+      else if (mimeType.startsWith("video/")) detectedMediaType = 'video';
+      else if (mimeType.startsWith("audio/")) detectedMediaType = 'audio';
+    } else {
+      console.error("Invalid or missing mimeType:", mimeType);
+    }
     
     if (detectedMediaType) {
         setMediaType(detectedMediaType);
@@ -113,8 +123,8 @@ export default function Home() {
                 return;
               }
               
-              const analysisInput = { gcsUri, mimeType };
-
+    
+              const analysisInput = { gcsUri, mimeType:fileMimeType  };
               const result = await videoScanAnalysis(analysisInput);
               
               setSuggestedClips(result.suggestedClips);
