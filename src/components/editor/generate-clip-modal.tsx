@@ -24,6 +24,9 @@ interface GenerateClipModalProps {
   setVideoUrl: (url: string | null) => void;
 }
 
+const MAX_FILE_SIZE_MB = 20;
+const MAX_FILE_SIZE_BYTES = MAX_FILE_SIZE_MB * 1024 * 1024;
+
 export function GenerateClipModal({
   isLoading,
   setIsLoading,
@@ -44,10 +47,28 @@ export function GenerateClipModal({
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
+      if (file.size > MAX_FILE_SIZE_BYTES) {
+        toast({
+          title: "File Too Large",
+          description: `Please upload a file smaller than ${MAX_FILE_SIZE_MB}MB.`,
+          variant: "destructive",
+        });
+        return;
+      }
       const reader = new FileReader();
+      reader.onloadstart = () => setIsLoading(true);
       reader.onload = (e) => {
         setFileDataUri(e.target?.result as string);
         setFileName(file.name);
+        setIsLoading(false);
+      };
+      reader.onerror = () => {
+        setIsLoading(false);
+        toast({
+          title: "File Read Error",
+          description: "There was an issue reading your file.",
+          variant: "destructive",
+        });
       };
       reader.readAsDataURL(file);
     }
@@ -170,13 +191,14 @@ export function GenerateClipModal({
               size="icon"
               className="h-6 w-6 shrink-0"
               onClick={clearUpload}
+              disabled={isLoading}
             >
               <X className="h-4 w-4" />
               <span className="sr-only">Remove file</span>
             </Button>
           </div>
         ) : (
-          <Button variant="outline" onClick={handleUploadClick}>
+          <Button variant="outline" onClick={handleUploadClick} disabled={isLoading}>
             <Upload className="mr-2 h-4 w-4" />
             Upload Media (Optional)
           </Button>
@@ -194,7 +216,7 @@ export function GenerateClipModal({
           ) : (
             <Sparkles className="mr-2 h-5 w-5" />
           )}
-          <span>{isLoading ? "Generating..." : "Generate"}</span>
+          <span>{isLoading ? "Processing..." : "Generate"}</span>
         </Button>
       </DialogFooter>
     </DialogContent>

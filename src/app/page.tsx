@@ -15,11 +15,16 @@ import { VideoPreview } from "@/components/editor/video-preview";
 import { GenerateClipModal } from "@/components/editor/generate-clip-modal";
 import { Dialog, DialogTrigger } from "@/components/ui/dialog";
 import { Zap } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
+
+const MAX_FILE_SIZE_MB = 20;
+const MAX_FILE_SIZE_BYTES = MAX_FILE_SIZE_MB * 1024 * 1024;
 
 export default function Home() {
   const [videoUrl, setVideoUrl] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const { toast } = useToast();
 
   const handleUploadClick = () => {
     fileInputRef.current?.click();
@@ -28,13 +33,32 @@ export default function Home() {
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
+      if (file.size > MAX_FILE_SIZE_BYTES) {
+        toast({
+          title: "File Too Large",
+          description: `Please upload a file smaller than ${MAX_FILE_SIZE_MB}MB.`,
+          variant: "destructive",
+        });
+        return;
+      }
+
       const reader = new FileReader();
+      reader.onloadstart = () => setIsLoading(true);
       reader.onload = (e) => {
         const dataUri = e.target?.result as string;
         const mimeType = dataUri.split(":")[1].split(";")[0];
         if (mimeType.startsWith("image/") || mimeType.startsWith("video/")) {
           setVideoUrl(dataUri);
         }
+        setIsLoading(false);
+      };
+      reader.onerror = () => {
+        setIsLoading(false);
+        toast({
+          title: "File Read Error",
+          description: "There was an issue reading your file.",
+          variant: "destructive",
+        });
       };
       reader.readAsDataURL(file);
     }

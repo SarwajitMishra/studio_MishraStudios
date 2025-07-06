@@ -16,6 +16,9 @@ import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2, Zap, FileText, Upload, FileVideo } from "lucide-react";
 
+const MAX_FILE_SIZE_MB = 20;
+const MAX_FILE_SIZE_BYTES = MAX_FILE_SIZE_MB * 1024 * 1024;
+
 export default function SummarizerPage() {
   const [videoDataUri, setVideoDataUri] = useState<string | null>(null);
   const [fileName, setFileName] = useState<string | null>(null);
@@ -26,20 +29,40 @@ export default function SummarizerPage() {
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
-    if (file && file.type.startsWith("video/")) {
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        setVideoDataUri(e.target?.result as string);
-        setFileName(file.name);
-        setSummary(null);
-      };
-      reader.readAsDataURL(file);
-    } else {
-      toast({
-        title: "Invalid File Type",
-        description: "Please upload a video file.",
-        variant: "destructive",
-      });
+    if (file) {
+      if (file.size > MAX_FILE_SIZE_BYTES) {
+        toast({
+          title: "File Too Large",
+          description: `Please upload a file smaller than ${MAX_FILE_SIZE_MB}MB.`,
+          variant: "destructive",
+        });
+        return;
+      }
+      if (file.type.startsWith("video/")) {
+        const reader = new FileReader();
+        reader.onloadstart = () => setIsLoading(true);
+        reader.onload = (e) => {
+          setVideoDataUri(e.target?.result as string);
+          setFileName(file.name);
+          setSummary(null);
+          setIsLoading(false);
+        };
+        reader.onerror = () => {
+          setIsLoading(false);
+          toast({
+            title: "File Read Error",
+            description: "There was an issue reading your file.",
+            variant: "destructive",
+          });
+        };
+        reader.readAsDataURL(file);
+      } else {
+        toast({
+          title: "Invalid File Type",
+          description: "Please upload a video file.",
+          variant: "destructive",
+        });
+      }
     }
   };
 
@@ -106,6 +129,7 @@ export default function SummarizerPage() {
                     variant="outline"
                     className="w-full"
                     onClick={() => fileInputRef.current?.click()}
+                    disabled={isLoading}
                   >
                     <Upload className="mr-2 h-4 w-4" />
                     {fileName ? "Change Video" : "Upload Video"}
@@ -129,7 +153,7 @@ export default function SummarizerPage() {
                   ) : (
                     <Zap className="mr-2 h-5 w-5" />
                   )}
-                  {isLoading ? "Generating..." : "Generate Summary"}
+                  {isLoading ? "Processing..." : "Generate Summary"}
                 </Button>
                 {summary && (
                   <div className="space-y-2 pt-4">

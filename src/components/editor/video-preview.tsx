@@ -43,7 +43,7 @@ export function VideoPreview({
               <div className="w-full h-full flex flex-col items-center justify-center gap-4 text-primary-foreground">
                 <Loader2 className="w-12 h-12 animate-spin text-primary" />
                 <p className="text-lg font-medium text-foreground">
-                  Generating your clip...
+                  Processing your file...
                 </p>
                 <p className="text-sm text-muted-foreground">
                   This may take a few moments.
@@ -64,7 +64,12 @@ export function VideoPreview({
                 <p className="text-base sm:text-lg text-muted-foreground max-w-md">
                   Upload a video or enter a prompt to begin editing magic.
                 </p>
-                <Button size="lg" className="mt-2" onClick={onUploadClick}>
+                <Button
+                  size="lg"
+                  className="mt-2"
+                  onClick={onUploadClick}
+                  disabled={isLoading}
+                >
                   <Upload className="mr-2 h-5 w-5" />
                   Upload a Video
                 </Button>
