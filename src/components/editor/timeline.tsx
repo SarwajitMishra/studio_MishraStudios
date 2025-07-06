@@ -1,5 +1,6 @@
 "use client"
 
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -22,7 +23,11 @@ import {
 } from "lucide-react";
 import { TimelineTrack } from "./timeline-track";
 
+type Tool = "select" | "trim" | "pan";
+
 export function Timeline() {
+  const [activeTool, setActiveTool] = useState<Tool>("select");
+
   const clips = [
     { start: 5, end: 25, color: "bg-purple-500" },
     { start: 30, end: 50, color: "bg-blue-500" },
@@ -43,7 +48,11 @@ export function Timeline() {
             <TooltipProvider>
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <Button variant="ghost" size="icon">
+                  <Button
+                    variant={activeTool === "select" ? "secondary" : "ghost"}
+                    size="icon"
+                    onClick={() => setActiveTool("select")}
+                  >
                     <MousePointer2 className="w-4 h-4" />
                   </Button>
                 </TooltipTrigger>
@@ -53,7 +62,11 @@ export function Timeline() {
               </Tooltip>
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <Button variant="ghost" size="icon">
+                  <Button
+                    variant={activeTool === "trim" ? "secondary" : "ghost"}
+                    size="icon"
+                    onClick={() => setActiveTool("trim")}
+                  >
                     <Scissors className="w-4 h-4" />
                   </Button>
                 </TooltipTrigger>
@@ -63,7 +76,11 @@ export function Timeline() {
               </Tooltip>
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <Button variant="ghost" size="icon">
+                  <Button
+                    variant={activeTool === "pan" ? "secondary" : "ghost"}
+                    size="icon"
+                    onClick={() => setActiveTool("pan")}
+                  >
                     <Grab className="w-4 h-4" />
                   </Button>
                 </TooltipTrigger>
