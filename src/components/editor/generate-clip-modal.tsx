@@ -18,9 +18,11 @@ import { imageToVideo } from "@/ai/flows/image-to-video";
 import { promptToVideo } from "@/ai/flows/prompt-to-video";
 import { audioToVideo } from "@/ai/flows/audio-to-video";
 import { useToast } from "@/hooks/use-toast";
+import type { MediaType } from "@/app/page";
 
 interface GenerateClipModalProps {
   setVideoUrl: (url: string | null) => void;
+  setMediaType: (type: MediaType | null) => void;
 }
 
 const MAX_FILE_SIZE_MB = 100;
@@ -28,6 +30,7 @@ const MAX_FILE_SIZE_BYTES = MAX_FILE_SIZE_MB * 1024 * 1024;
 
 export function GenerateClipModal({
   setVideoUrl,
+  setMediaType,
 }: GenerateClipModalProps) {
   const [prompt, setPrompt] = useState(
     "A majestic lion in the savanna at sunrise."
@@ -103,6 +106,7 @@ export function GenerateClipModal({
 
     setIsGenerating(true);
     setVideoUrl(null);
+    setMediaType(null);
 
     try {
       let result: { videoDataUri?: string; videoClipDataUri?: string } = {};
@@ -141,6 +145,8 @@ export function GenerateClipModal({
 
       if (newVideoUrl) {
         setVideoUrl(newVideoUrl);
+        // All current AI flows generate images that represent video clips
+        setMediaType("image");
         toast({
           title: "Clip Generated!",
           description: "Your new clip is ready in the preview window.",

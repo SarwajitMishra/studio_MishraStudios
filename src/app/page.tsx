@@ -19,8 +19,11 @@ import { useToast } from "@/hooks/use-toast";
 const MAX_FILE_SIZE_MB = 100;
 const MAX_FILE_SIZE_BYTES = MAX_FILE_SIZE_MB * 1024 * 1024;
 
+export type MediaType = "image" | "video" | "audio";
+
 export default function Home() {
   const [videoUrl, setVideoUrl] = useState<string | null>(null);
+  const [mediaType, setMediaType] = useState<MediaType | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [progress, setProgress] = useState(0);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -46,6 +49,8 @@ export default function Home() {
       reader.onloadstart = () => {
         setIsLoading(true);
         setProgress(0);
+        setVideoUrl(null);
+        setMediaType(null);
       };
       reader.onprogress = (e) => {
         if (e.lengthComputable) {
@@ -55,8 +60,25 @@ export default function Home() {
       reader.onload = (e) => {
         const dataUri = e.target?.result as string;
         const mimeType = dataUri.split(":")[1].split(";")[0];
-        if (mimeType.startsWith("image/") || mimeType.startsWith("video/")) {
+        
+        let detectedMediaType: MediaType | null = null;
+        if (mimeType.startsWith("image/")) {
+          detectedMediaType = 'image';
+        } else if (mimeType.startsWith("video/")) {
+          detectedMediaType = 'video';
+        } else if (mimeType.startsWith("audio/")) {
+          detectedMediaType = 'audio';
+        }
+
+        if (detectedMediaType) {
+          setMediaType(detectedMediaType);
           setVideoUrl(dataUri);
+        } else {
+           toast({
+            title: "Unsupported File Type",
+            description: "Please upload an image, video, or audio file.",
+            variant: "destructive",
+          });
         }
         setIsLoading(false);
       };
@@ -91,6 +113,7 @@ export default function Home() {
             />
             <VideoPreview
               videoUrl={videoUrl}
+              mediaType={mediaType}
               isLoading={isLoading}
               progress={progress}
               onUploadClick={handleUploadClick}
@@ -110,7 +133,7 @@ export default function Home() {
               <span className="sr-only">Generate Clip</span>
             </Button>
           </DialogTrigger>
-          <GenerateClipModal setVideoUrl={setVideoUrl} />
+          <GenerateClipModal setVideoUrl={setVideoUrl} setMediaType={setMediaType} />
         </Dialog>
       </SidebarInset>
     </SidebarProvider>

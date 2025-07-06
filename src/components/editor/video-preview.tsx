@@ -15,10 +15,13 @@ import {
   Film,
   Sparkles,
   Upload,
+  Music,
 } from "lucide-react";
+import type { MediaType } from "@/app/page";
 
 interface VideoPreviewProps {
   videoUrl: string | null;
+  mediaType: MediaType | null;
   isLoading: boolean;
   progress: number;
   onUploadClick: () => void;
@@ -26,13 +29,57 @@ interface VideoPreviewProps {
 
 export function VideoPreview({
   videoUrl,
+  mediaType,
   isLoading,
   progress,
   onUploadClick,
 }: VideoPreviewProps) {
   const showPlaceholder = !videoUrl && !isLoading;
   const showLoadingState = isLoading;
-  const showGeneratedVideo = videoUrl && !isLoading;
+  const showMedia = videoUrl && !isLoading;
+
+  const renderMedia = () => {
+    if (!showMedia) return null;
+
+    switch (mediaType) {
+      case "image":
+        return (
+          <Image
+            src={videoUrl!}
+            alt="Uploaded content"
+            data-ai-hint="uploaded content"
+            fill
+            className="object-contain rounded-lg"
+          />
+        );
+      case "video":
+        return (
+          <video
+            src={videoUrl!}
+            controls
+            autoPlay
+            className="w-full h-full object-contain rounded-lg"
+          >
+            Your browser does not support the video tag.
+          </video>
+        );
+      case "audio":
+        return (
+          <div className="flex flex-col items-center justify-center text-center gap-4 p-8 text-foreground">
+            <Music className="w-24 h-24 text-primary" />
+            <h3 className="text-2xl font-bold">Audio Content</h3>
+            <p className="text-muted-foreground max-w-sm">
+              Your audio file is loaded. Use the player below to preview it.
+            </p>
+            <audio src={videoUrl!} controls className="w-full max-w-sm mt-4">
+              Your browser does not support the audio element.
+            </audio>
+          </div>
+        );
+      default:
+        return null;
+    }
+  };
 
   return (
     <Card className="h-full shadow-md overflow-hidden">
@@ -80,33 +127,16 @@ export function VideoPreview({
               </div>
             )}
 
-            {showGeneratedVideo && (
-              <Image
-                src={videoUrl}
-                alt="Generated video"
-                data-ai-hint="generated art"
-                fill
-                className="object-contain rounded-lg"
-              />
-            )}
+            {renderMedia()}
           </AspectRatio>
 
-          {/* Controls Overlay */}
-          {!showPlaceholder && (
+          {/* Controls Overlay - only show for images, which represent AI-generated clips */}
+          {showMedia && mediaType === "image" && (
             <div className="absolute bottom-0 left-0 right-0 p-3 bg-gradient-to-t from-black/60 to-transparent text-primary-foreground">
               <div className="flex items-center gap-4">
-                <span className="text-xs">
-                  {showGeneratedVideo ? "0:00" : "0:12"}
-                </span>
-                <Slider
-                  defaultValue={[showGeneratedVideo ? 0 : 12]}
-                  max={showGeneratedVideo ? 5 : 100}
-                  step={1}
-                  className="flex-1"
-                />
-                <span className="text-xs">
-                  {showGeneratedVideo ? "0:05" : "1:30"}
-                </span>
+                <span className="text-xs">0:00</span>
+                <Slider defaultValue={[0]} max={5} step={0.1} className="flex-1" />
+                <span className="text-xs">0:05</span>
               </div>
               <div className="flex items-center justify-between mt-2">
                 <div className="flex items-center gap-1">
@@ -122,11 +152,7 @@ export function VideoPreview({
                     size="icon"
                     className="text-white hover:text-white hover:bg-white/10"
                   >
-                    {showGeneratedVideo ? (
-                      <Play className="h-6 w-6" />
-                    ) : (
-                      <Pause className="h-6 w-6" />
-                    )}
+                    <Play className="h-6 w-6" />
                   </Button>
                   <Button
                     variant="ghost"
