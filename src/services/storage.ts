@@ -5,9 +5,8 @@ import { Storage } from '@google-cloud/storage';
 // By not providing credentials, the client library will use
 // Application Default Credentials (ADC). This is the recommended approach
 // for authenticating in a Google Cloud environment like Firebase App Hosting.
-const storage = new Storage({
-  projectId: process.env.GCLOUD_PROJECT,
-});
+// When running locally, this relies on `gcloud auth application-default login`.
+const storage = new Storage();
 
 const bucketName = process.env.GCS_BUCKET_NAME;
 
