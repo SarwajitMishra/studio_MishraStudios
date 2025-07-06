@@ -31,8 +31,8 @@ export default function Home() {
   const [isLoading, setIsLoading] = useState(false);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [progress, setProgress] = useState(0);
-  const [videoDuration, setVideoDuration] = useState<number | null>(null);
   const [suggestedClips, setSuggestedClips] = useState<SuggestedClip[]>([]);
+  const [activeClip, setActiveClip] = useState<SuggestedClip | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
 
@@ -40,16 +40,15 @@ export default function Home() {
     let analysisProgressInterval: NodeJS.Timeout | undefined;
 
     if (isAnalyzing) {
-      // Start a fake progress interval for the analysis step
       analysisProgressInterval = setInterval(() => {
         setProgress((prev) => {
-          if (prev >= 95) { // Stop at 95 to show it's "almost done"
+          if (prev >= 95) {
             clearInterval(analysisProgressInterval!);
             return 95;
           }
           return prev + 5;
         });
-      }, 500); // Update every half a second
+      }, 500);
     }
 
     return () => {
@@ -66,8 +65,8 @@ export default function Home() {
   const resetState = () => {
     setVideoUrl(null);
     setMediaType(null);
-    setVideoDuration(null);
     setSuggestedClips([]);
+    setActiveClip(null);
     setProgress(0);
   }
 
@@ -81,45 +80,37 @@ export default function Home() {
     const mimeType = file.type;
 
     let detectedMediaType: MediaType | null = null;
-    if (typeof mimeType === "string") {
-      if (mimeType.startsWith("image/")) detectedMediaType = 'image';
-      else if (mimeType.startsWith("video/")) detectedMediaType = 'video';
-      else if (mimeType.startsWith("audio/")) detectedMediaType = 'audio';
-    } else {
-      console.error("Invalid or missing mimeType:", mimeType);
+    if (mimeType.startsWith("image/")) detectedMediaType = 'image';
+    else if (mimeType.startsWith("video/")) detectedMediaType = 'video';
+    else if (mimeType.startsWith("audio/")) detectedMediaType = 'audio';
+    else {
+      toast({
+        title: "Unsupported File Type",
+        description: "Please upload an image, video, or audio file.",
+        variant: "destructive",
+      });
+      return;
     }
     
-    if (detectedMediaType) {
-        setMediaType(detectedMediaType);
-        setVideoUrl(objectUrl);
-    } else {
-        toast({
-            title: "Unsupported File Type",
-            description: "Please upload an image, video, or audio file.",
-            variant: "destructive",
-        });
-        return;
-    }
+    setMediaType(detectedMediaType);
+    setVideoUrl(objectUrl);
     
     setIsLoading(true);
     setProgress(0);
 
     try {
-      // 1. Get signed URL from our server
       const { uploadUrl, gcsUri } = await generateUploadUrl({
         fileName: file.name,
         mimeType: file.type,
       });
 
-      // 2. Upload the file to GCS
       const xhr = new XMLHttpRequest();
       xhr.open("PUT", uploadUrl, true);
       xhr.setRequestHeader("Content-Type", file.type);
 
       xhr.upload.onprogress = (event) => {
         if (event.lengthComputable) {
-          const percentComplete = Math.round((event.loaded / event.total) * 100);
-          setProgress(percentComplete);
+          setProgress(Math.round((event.loaded / event.total) * 100));
         }
       };
 
@@ -129,17 +120,7 @@ export default function Home() {
           if (detectedMediaType === 'video') {
             try {
               setIsAnalyzing(true);
-              setProgress(0); // Reset progress for analysis phase
-              
-              if (!mimeType) {
-                toast({
-                  title: "Analysis Failed",
-                  description: "Cannot analyze video because its content type is unknown.",
-                  variant: "destructive",
-                });
-                setIsAnalyzing(false);
-                return;
-              }
+              setProgress(0);
               
               const analysisInput = { gcsUri, mimeType };
               const result = await videoScanAnalysis(analysisInput);
@@ -147,13 +128,13 @@ export default function Home() {
               setSuggestedClips(result.suggestedClips);
                toast({
                 title: "Analysis Complete!",
-                description: "We've suggested some clips for you on the timeline.",
+                description: "We've suggested some clips for you below.",
               });
             } catch (error) {
               console.error("Failed to analyze video:", error);
               toast({
                 title: "Analysis Failed",
-                description: error instanceof Error ? error.message : "We couldn't generate clip suggestions for this video.",
+                description: error instanceof Error ? error.message : "We couldn't generate clip suggestions.",
                 variant: "destructive",
               });
             } finally {
@@ -162,29 +143,22 @@ export default function Home() {
           }
         } else {
             setIsLoading(false);
-            console.error(`Upload failed with status: ${xhr.status}`, {
-                status: xhr.status,
-                statusText: xhr.statusText,
-                response: xhr.responseText
-            });
+            console.error(`Upload failed with status: ${xhr.status}`);
             toast({
                 title: "Upload Failed",
-                description: `The server responded with status ${xhr.status}. Please check your bucket's CORS settings.`,
+                description: `The server responded with status ${xhr.status}. Check your CORS settings.`,
                 variant: "destructive",
             });
         }
       };
       
-      xhr.onerror = (e) => {
+      xhr.onerror = () => {
         setIsLoading(false);
         setProgress(0);
-        console.error("Network error during file upload.", {
-          status: xhr.status,
-          statusText: xhr.statusText,
-        });
+        console.error("Network error during file upload.");
         toast({
             title: "Upload Failed",
-            description: "A network error occurred. Please check your CORS configuration and network connection.",
+            description: "A network error occurred. Check your CORS configuration.",
             variant: "destructive",
         });
       };
@@ -197,7 +171,7 @@ export default function Home() {
       console.error("File upload process failed:", error);
       toast({
         title: "Upload Failed",
-        description: error instanceof Error ? error.message : "Could not upload file. Is your GCS bucket configured?",
+        description: error instanceof Error ? error.message : "Could not upload file.",
         variant: "destructive",
       });
     }
@@ -216,7 +190,7 @@ export default function Home() {
       <SidebarInset>
         <div className="flex flex-col h-screen bg-background">
           <Header />
-          <main className="flex-1 grid grid-rows-[1fr_auto] gap-4 p-4 lg:p-6 overflow-hidden">
+          <main className="flex-1 flex flex-col gap-4 p-4 lg:p-6 overflow-hidden">
             <input
               type="file"
               accept="image/*,video/*,audio/*"
@@ -224,24 +198,25 @@ export default function Home() {
               onChange={handleFileChange}
               className="hidden"
             />
-            <VideoPreview
-              videoUrl={videoUrl}
-              mediaType={mediaType}
-              isLoading={showLoadingState}
-              progress={showLoadingState ? progress : undefined}
-              loadingMessage={loadingMessage}
-              onUploadClick={handleUploadClick}
-              setVideoDuration={setVideoDuration}
-            />
-            {videoUrl && (
-              <div className="h-[180px] sm:h-[220px] md:h-[260px] lg:h-[320px]">
-                <Timeline 
-                  videoClips={suggestedClips}
-                  videoDuration={videoDuration}
-                  isProcessing={showLoadingState}
+            <div className="flex-1 min-h-0">
+                <VideoPreview
+                  videoUrl={videoUrl}
                   mediaType={mediaType}
+                  isLoading={showLoadingState}
+                  progress={showLoadingState ? progress : undefined}
+                  loadingMessage={loadingMessage}
+                  onUploadClick={handleUploadClick}
+                  clip={activeClip}
+                  onClipEnd={() => setActiveClip(null)}
                 />
-              </div>
+            </div>
+            
+            {videoUrl && mediaType === 'video' && suggestedClips.length > 0 && !showLoadingState && (
+              <Timeline
+                clips={suggestedClips}
+                videoUrl={videoUrl}
+                onClipSelect={setActiveClip}
+              />
             )}
           </main>
         </div>

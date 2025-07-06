@@ -1,24 +1,17 @@
-import { useRef } from "react";
+import { useRef, useEffect } from "react";
 import Image from "next/image";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Slider } from "@/components/ui/slider";
 import { Progress } from "@/components/ui/progress";
 import {
-  Play,
-  Pause,
-  SkipBack,
-  SkipForward,
-  Volume2,
-  Maximize,
   Loader2,
   Film,
   Sparkles,
   Upload,
   Music,
 } from "lucide-react";
-import type { MediaType } from "@/app/page";
+import type { MediaType, SuggestedClip } from "@/app/page";
 
 interface VideoPreviewProps {
   videoUrl: string | null;
@@ -27,7 +20,8 @@ interface VideoPreviewProps {
   progress?: number;
   loadingMessage?: string;
   onUploadClick: () => void;
-  setVideoDuration: (duration: number | null) => void;
+  clip: SuggestedClip | null;
+  onClipEnd: () => void;
 }
 
 export function VideoPreview({
@@ -37,18 +31,52 @@ export function VideoPreview({
   progress,
   loadingMessage,
   onUploadClick,
-  setVideoDuration,
+  clip,
+  onClipEnd,
 }: VideoPreviewProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const showPlaceholder = !videoUrl && !isLoading;
   const showLoadingState = isLoading;
   const showMedia = videoUrl && !isLoading;
 
-  const handleLoadedMetadata = () => {
-    if (videoRef.current) {
-      setVideoDuration(videoRef.current.duration);
+  useEffect(() => {
+    const videoElement = videoRef.current;
+    if (videoElement && videoUrl && mediaType === 'video') {
+      const newSrc = clip 
+        ? `${videoUrl}#t=${clip.startTime},${clip.endTime}` 
+        // When clip is null, revert to original blob URL if it exists, otherwise the base videoUrl
+        : videoElement.src.startsWith('blob:') ? videoElement.src.split('#')[0] : videoUrl;
+
+      // Only update src if it has actually changed to avoid reloads
+      if (videoElement.currentSrc !== newSrc) {
+        videoElement.src = newSrc;
+      }
+      
+      const playPromise = videoElement.play();
+      if (playPromise !== undefined) {
+          playPromise.catch(e => console.error("Autoplay was prevented:", e));
+      }
+      
+      const handleTimeUpdate = () => {
+        if (clip && videoElement.currentTime >= clip.endTime) {
+          videoElement.pause();
+          onClipEnd(); // Signal that the clip has finished
+        }
+      };
+
+      const handleLoadedData = () => {
+        videoElement.play().catch(e => console.error("Autoplay after load was prevented:", e));
+      };
+
+      videoElement.addEventListener('timeupdate', handleTimeUpdate);
+      videoElement.addEventListener('loadeddata', handleLoadedData);
+
+      return () => {
+        videoElement.removeEventListener('timeupdate', handleTimeUpdate);
+        videoElement.removeEventListener('loadeddata', handleLoadedData);
+      };
     }
-  };
+  }, [clip, videoUrl, mediaType, onClipEnd]);
 
   const renderMedia = () => {
     if (!showMedia) return null;
@@ -65,13 +93,12 @@ export function VideoPreview({
           />
         );
       case "video":
+        // The video src is now primarily controlled via the useEffect hook
         return (
           <video
             ref={videoRef}
             src={videoUrl!}
-            onLoadedMetadata={handleLoadedMetadata}
             controls
-            autoPlay
             className="w-full h-full object-contain rounded-lg"
           >
             Your browser does not support the video tag.
@@ -143,64 +170,6 @@ export function VideoPreview({
 
             {renderMedia()}
           </AspectRatio>
-
-          {/* Controls Overlay - only show for images, which represent AI-generated clips */}
-          {showMedia && mediaType === "image" && (
-            <div className="absolute bottom-0 left-0 right-0 p-3 bg-gradient-to-t from-black/60 to-transparent text-primary-foreground">
-              <div className="flex items-center gap-4">
-                <span className="text-xs">0:00</span>
-                <Slider defaultValue={[0]} max={5} step={0.1} className="flex-1" />
-                <span className="text-xs">0:05</span>
-              </div>
-              <div className="flex items-center justify-between mt-2">
-                <div className="flex items-center gap-1">
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="text-white hover:text-white hover:bg-white/10"
-                  >
-                    <SkipBack className="h-5 w-5" />
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="text-white hover:text-white hover:bg-white/10"
-                  >
-                    <Play className="h-6 w-6" />
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="text-white hover:text-white hover:bg-white/10"
-                  >
-                    <SkipForward className="h-5 w-5" />
-                  </Button>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="text-white hover:text-white hover:bg-white/10"
-                  >
-                    <Volume2 className="h-5 w-5" />
-                  </Button>
-                  <Slider
-                    defaultValue={[75]}
-                    max={100}
-                    step={1}
-                    className="w-24"
-                  />
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="text-white hover:text-white hover:bg-white/10"
-                  >
-                    <Maximize className="h-5 w-5" />
-                  </Button>
-                </div>
-              </div>
-            </div>
-          )}
         </div>
       </CardContent>
     </Card>
