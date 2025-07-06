@@ -22,7 +22,7 @@ import {
   MousePointer2,
 } from "lucide-react";
 import { TimelineTrack } from "./timeline-track";
-import type { SuggestedClip } from "@/app/page";
+import type { SuggestedClip, MediaType } from "@/app/page";
 
 type Tool = "select" | "trim" | "pan";
 
@@ -30,49 +30,49 @@ interface TimelineProps {
   videoClips: SuggestedClip[];
   videoDuration: number | null;
   isProcessing: boolean;
+  mediaType: MediaType | null;
 }
 
-export function Timeline({ videoClips, videoDuration, isProcessing }: TimelineProps) {
+export function Timeline({ videoClips, videoDuration, isProcessing, mediaType }: TimelineProps) {
   const [activeTool, setActiveTool] = useState<Tool>("select");
 
   const transformedVideoClips = (() => {
-    // If we are currently processing (uploading/analyzing), show an empty track.
-    if (isProcessing) {
+    if (isProcessing || !videoDuration || !videoClips.length) {
       return [];
     }
     
-    // If we have both the clips from the AI and the video's duration, map them to the timeline.
-    if (videoClips.length > 0 && videoDuration) {
-      return videoClips.map((clip, index) => {
-        const colors = ["bg-purple-500", "bg-blue-500", "bg-green-500", "bg-yellow-500", "bg-red-500"];
-        return {
-          start: (clip.startTime / videoDuration) * 100,
-          end: (clip.endTime / videoDuration) * 100,
-          color: colors[index % colors.length],
-        };
-      });
-    }
-
-    // If analysis is done but we are waiting for video metadata, show an empty track.
-    // This prevents a flash of mock data.
-    if (videoClips.length > 0 && !videoDuration) {
-      return [];
-    }
-
-    // Default state: show mock clips only if no video has been uploaded/analyzed yet.
-    return [
-      { start: 5, end: 25, color: "bg-purple-500" },
-      { start: 30, end: 50, color: "bg-blue-500" },
-      { start: 65, end: 90, color: "bg-green-500" },
-    ];
+    return videoClips.map((clip, index) => {
+      const colors = ["bg-purple-500", "bg-blue-500", "bg-green-500", "bg-yellow-500", "bg-red-500"];
+      return {
+        description: clip.description,
+        start: (clip.startTime / videoDuration) * 100,
+        end: (clip.endTime / videoDuration) * 100,
+        color: colors[index % colors.length],
+      };
+    });
   })();
 
-  const imageClips = [
-    { start: 28, end: 42, color: "bg-pink-500" },
-    { start: 55, end: 70, color: "bg-indigo-500" },
-  ];
-  const audioClips = [{ start: 0, end: 100, color: "bg-teal-500" }];
-  const voiceClips = [{ start: 10, end: 80, color: "bg-orange-500" }];
+  const renderTracks = () => {
+    if (isProcessing) {
+      return null;
+    }
+
+    switch (mediaType) {
+      case 'video':
+        return (
+          <>
+            <TimelineTrack type="video" label="Video" clips={transformedVideoClips} />
+            <TimelineTrack type="audio" label="Audio" clips={[{ start: 0, end: 100, color: "bg-teal-500", description: "Original Audio" }]} />
+          </>
+        );
+      case 'image':
+        return <TimelineTrack type="image" label="Image" clips={[{ start: 0, end: 100, color: "bg-pink-500", description: "Uploaded Image" }]} />;
+      case 'audio':
+        return <TimelineTrack type="audio" label="Audio" clips={[{ start: 0, end: 100, color: "bg-teal-500", description: "Uploaded Audio" }]} />;
+      default:
+        return null;
+    }
+  };
 
   return (
     <Card className="h-full shadow-md">
@@ -143,14 +143,7 @@ export function Timeline({ videoClips, videoDuration, isProcessing }: TimelinePr
         </div>
         <ScrollArea className="flex-1">
           <div className="relative">
-            <TimelineTrack type="video" label="Video" clips={transformedVideoClips} />
-            <TimelineTrack type="image" label="Images" clips={imageClips} />
-            <TimelineTrack
-              type="audio"
-              label="Background Music"
-              clips={audioClips}
-            />
-            <TimelineTrack type="voice" label="Voice-over" clips={voiceClips} />
+            {renderTracks()}
           </div>
         </ScrollArea>
       </CardContent>

@@ -4,7 +4,7 @@ import { GripVertical, Mic, Music, Video, Image as ImageIcon } from "lucide-reac
 interface TimelineTrackProps {
   type: "video" | "audio" | "voice" | "image";
   label: string;
-  clips: { start: number; end: number; color: string }[];
+  clips: { start: number; end: number; color: string; description?: string }[];
 }
 
 const typeIcons = {
@@ -28,15 +28,19 @@ export function TimelineTrack({ type, label, clips }: TimelineTrackProps) {
           <div
             key={index}
             className={cn(
-              "absolute top-1/2 -translate-y-1/2 h-16 rounded-md flex items-center justify-between px-2 cursor-pointer group transition-all duration-200 hover:h-[72px] hover:-translate-y-[36px]",
+              "absolute top-1/2 -translate-y-1/2 h-16 rounded-md flex items-center justify-between px-2 cursor-pointer group transition-all duration-200 hover:h-[72px] hover:-translate-y-[36px] overflow-hidden",
               clip.color
             )}
             style={{
               left: `${clip.start}%`,
               width: `${clip.end - clip.start}%`,
             }}
+            title={clip.description}
           >
             <GripVertical className="w-5 h-5 text-white/50 cursor-grab opacity-0 group-hover:opacity-100 transition-opacity" />
+            <span className="text-white text-xs font-medium truncate px-1 pointer-events-none">
+              {clip.description}
+            </span>
             <GripVertical className="w-5 h-5 text-white/50 cursor-grab opacity-0 group-hover:opacity-100 transition-opacity" />
           </div>
         ))}

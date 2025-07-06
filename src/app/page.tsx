@@ -233,13 +233,16 @@ export default function Home() {
               onUploadClick={handleUploadClick}
               setVideoDuration={setVideoDuration}
             />
-            <div className="h-[180px] sm:h-[220px] md:h-[260px] lg:h-[320px]">
-              <Timeline 
-                videoClips={suggestedClips}
-                videoDuration={videoDuration}
-                isProcessing={showLoadingState}
-              />
-            </div>
+            {videoUrl && (
+              <div className="h-[180px] sm:h-[220px] md:h-[260px] lg:h-[320px]">
+                <Timeline 
+                  videoClips={suggestedClips}
+                  videoDuration={videoDuration}
+                  isProcessing={showLoadingState}
+                  mediaType={mediaType}
+                />
+              </div>
+            )}
           </main>
         </div>
         <Dialog>
