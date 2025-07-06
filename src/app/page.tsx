@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useRef, useState, useEffect } from "react";
 import { Header } from "@/components/layout/header";
 import { SidebarNav } from "@/components/layout/sidebar-nav";
 import { Button } from "@/components/ui/button";
@@ -36,6 +36,29 @@ export default function Home() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
 
+  useEffect(() => {
+    let analysisProgressInterval: NodeJS.Timeout | undefined;
+
+    if (isAnalyzing) {
+      // Start a fake progress interval for the analysis step
+      analysisProgressInterval = setInterval(() => {
+        setProgress((prev) => {
+          if (prev >= 95) { // Stop at 95 to show it's "almost done"
+            clearInterval(analysisProgressInterval!);
+            return 95;
+          }
+          return prev + 5;
+        });
+      }, 500); // Update every half a second
+    }
+
+    return () => {
+      if (analysisProgressInterval) {
+        clearInterval(analysisProgressInterval);
+      }
+    };
+  }, [isAnalyzing]);
+
   const handleUploadClick = () => {
     fileInputRef.current?.click();
   };
@@ -56,12 +79,6 @@ export default function Home() {
     
     const objectUrl = URL.createObjectURL(file);
     const mimeType = file.type;
-
-    const fileMimeType = file.type; // ✅ SCOPED FIX
-
-    console.log("Uploaded file:", file);
-    console.log("mimeType:", mimeType);
-
 
     let detectedMediaType: MediaType | null = null;
     if (typeof mimeType === "string") {
@@ -112,6 +129,7 @@ export default function Home() {
           if (detectedMediaType === 'video') {
             try {
               setIsAnalyzing(true);
+              setProgress(0); // Reset progress for analysis phase
               
               if (!mimeType) {
                 toast({
@@ -123,8 +141,7 @@ export default function Home() {
                 return;
               }
               
-    
-              const analysisInput = { gcsUri, mimeType:fileMimeType  };
+              const analysisInput = { gcsUri, mimeType };
               const result = await videoScanAnalysis(analysisInput);
               
               setSuggestedClips(result.suggestedClips);
@@ -186,11 +203,10 @@ export default function Home() {
     }
   };
 
-  const loadingMessage = isAnalyzing 
-    ? "Analyzing video for key moments..." 
-    : `Uploading your file... ${progress}%`;
-  
   const showLoadingState = isLoading || isAnalyzing;
+  const loadingMessage = isAnalyzing 
+    ? `Analyzing for key moments... ${progress}%` 
+    : `Uploading your file... ${progress}%`;
 
   return (
     <SidebarProvider>
@@ -212,7 +228,7 @@ export default function Home() {
               videoUrl={videoUrl}
               mediaType={mediaType}
               isLoading={showLoadingState}
-              progress={isLoading ? progress : undefined}
+              progress={showLoadingState ? progress : undefined}
               loadingMessage={loadingMessage}
               onUploadClick={handleUploadClick}
               setVideoDuration={setVideoDuration}
