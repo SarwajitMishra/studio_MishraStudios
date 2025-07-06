@@ -115,10 +115,13 @@ export function GenerateClipModal({
               }
           };
           xhr.onerror = () => {
-              console.error("Network error during file upload.");
+              console.error("Network error during upload.", {
+                status: xhr.status,
+                statusText: xhr.statusText,
+              });
               toast({
                   title: "Upload Failed",
-                  description: "A network error occurred. Please check your connection and bucket configuration.",
+                  description: "A network error occurred. Please check your CORS configuration and network connection.",
                   variant: "destructive",
               });
               reject(new Error("Network error during upload."));

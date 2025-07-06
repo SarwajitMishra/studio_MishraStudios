@@ -85,10 +85,13 @@ export default function CaptionsPage() {
       xhr.onerror = () => {
         setIsLoading(false);
         setProgress(0);
-        console.error("Network error during file upload.");
+        console.error("Network error during file upload.", {
+            status: xhr.status,
+            statusText: xhr.statusText,
+        });
         toast({
             title: "Upload Failed",
-            description: "A network error occurred. Please check your connection and bucket configuration.",
+            description: "A network error occurred. Please check your CORS configuration and network connection.",
             variant: "destructive",
         });
       };
