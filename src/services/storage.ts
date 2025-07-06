@@ -50,28 +50,28 @@ export async function generateV4UploadSignedUrl(fileName: string, mimeType: stri
  * @returns A promise that resolves to the Base64 encoded content of the file.
  */
 export async function downloadFileAsBase64(gcsUri: string): Promise<string> {
-    console.log(`[SERVER-DEBUG] downloadFileAsBase64 received URI: '${gcsUri}'`);
+    console.log(`[SERVER-DEBUG] downloadFileAsBase64 received raw URI: '${gcsUri}'`);
 
-    if (!gcsUri || !gcsUri.startsWith('gs://')) {
+    if (!gcsUri) {
+        throw new Error('GCS URI is empty or undefined.');
+    }
+
+    // A more robust regex to capture bucket and file path
+    const match = gcsUri.match(/^gs:\/\/([a-zA-Z0-9._-]+)\/(.+)$/);
+    if (!match) {
         throw new Error(`Invalid GCS URI format. Expected 'gs://<bucket-name>/<file-name>'. Received: '${gcsUri}'`);
     }
-
-    const pathWithoutPrefix = gcsUri.substring(5);
-    const slashIndex = pathWithoutPrefix.indexOf('/');
-
-    if (slashIndex === -1) {
-        throw new Error(`Invalid GCS URI: Missing file path. URI: '${gcsUri}'`);
-    }
     
-    const bucketNameFromUri = pathWithoutPrefix.substring(0, slashIndex);
-    const fileName = pathWithoutPrefix.substring(slashIndex + 1);
+    const [, bucketNameFromUri, fileName] = match;
 
     if (!bucketNameFromUri) {
-        throw new Error(`Invalid GCS URI: Bucket name is empty. URI: '${gcsUri}'`);
+        throw new Error(`Could not parse bucket name from URI: '${gcsUri}'`);
     }
     if (!fileName) {
-        throw new Error(`Invalid GCS URI: File name is empty. URI: '${gcsUri}'`);
+        throw new Error(`Could not parse file name from URI: '${gcsUri}'`);
     }
+    
+    console.log(`[SERVER-DEBUG] Parsed Bucket: '${bucketNameFromUri}', Parsed FileName: '${fileName}'`);
 
     try {
         const file = storage.bucket(bucketNameFromUri).file(fileName);
