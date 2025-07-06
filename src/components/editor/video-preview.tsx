@@ -22,6 +22,7 @@ interface VideoPreviewProps {
   onUploadClick: () => void;
   clip: SuggestedClip | null;
   onClipEnd: () => void;
+  onDurationChange: (duration: number) => void;
 }
 
 export function VideoPreview({
@@ -33,6 +34,7 @@ export function VideoPreview({
   onUploadClick,
   clip,
   onClipEnd,
+  onDurationChange,
 }: VideoPreviewProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const showPlaceholder = !videoUrl && !isLoading;
@@ -64,19 +66,22 @@ export function VideoPreview({
         }
       };
 
-      const handleLoadedData = () => {
+      const handleLoadedMetadata = () => {
+        if (videoElement.duration && isFinite(videoElement.duration)) {
+            onDurationChange(videoElement.duration);
+        }
         videoElement.play().catch(e => console.error("Autoplay after load was prevented:", e));
       };
 
       videoElement.addEventListener('timeupdate', handleTimeUpdate);
-      videoElement.addEventListener('loadeddata', handleLoadedData);
+      videoElement.addEventListener('loadedmetadata', handleLoadedMetadata);
 
       return () => {
         videoElement.removeEventListener('timeupdate', handleTimeUpdate);
-        videoElement.removeEventListener('loadeddata', handleLoadedData);
+        videoElement.removeEventListener('loadedmetadata', handleLoadedMetadata);
       };
     }
-  }, [clip, videoUrl, mediaType, onClipEnd]);
+  }, [clip, videoUrl, mediaType, onClipEnd, onDurationChange]);
 
   const renderMedia = () => {
     if (!showMedia) return null;

@@ -1,6 +1,7 @@
+
 "use client";
 
-import { useRef, useState, useEffect } from "react";
+import { useRef, useState, useEffect, useCallback } from "react";
 import { Header } from "@/components/layout/header";
 import { SidebarNav } from "@/components/layout/sidebar-nav";
 import { Button } from "@/components/ui/button";
@@ -13,7 +14,15 @@ import { Timeline } from "@/components/editor/timeline";
 import { VideoPreview } from "@/components/editor/video-preview";
 import { GenerateClipModal } from "@/components/editor/generate-clip-modal";
 import { Dialog, DialogTrigger } from "@/components/ui/dialog";
-import { Zap, Scissors, Loader2 } from "lucide-react";
+import {
+  Zap,
+  Scissors,
+  Loader2,
+  MicVocal,
+  Music,
+  Type,
+  Wand2,
+} from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { videoScanAnalysis } from "@/ai/flows/video-scan-analysis";
 import { generateUploadUrl } from "@/ai/flows/generate-upload-url";
@@ -26,6 +35,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
+import { Slider } from "@/components/ui/slider";
 import type { MediaType, SuggestedClip } from "@/lib/types";
 
 export default function Home() {
@@ -38,6 +48,10 @@ export default function Home() {
   const [progress, setProgress] = useState(0);
   const [suggestedClips, setSuggestedClips] = useState<SuggestedClip[]>([]);
   const [activeClip, setActiveClip] = useState<SuggestedClip | null>(null);
+  const [editableClipRange, setEditableClipRange] = useState<
+    [number, number] | null
+  >(null);
+  const [videoDuration, setVideoDuration] = useState<number | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
 
@@ -63,6 +77,14 @@ export default function Home() {
     };
   }, [isAnalyzing]);
 
+  useEffect(() => {
+    if (activeClip) {
+      setEditableClipRange([activeClip.startTime, activeClip.endTime]);
+    } else {
+      setEditableClipRange(null);
+    }
+  }, [activeClip]);
+
   const handleUploadClick = () => {
     fileInputRef.current?.click();
   };
@@ -73,10 +95,18 @@ export default function Home() {
     setGcsUri(null);
     setSuggestedClips([]);
     setActiveClip(null);
+    setEditableClipRange(null);
+    setVideoDuration(null);
     setProgress(0);
   };
 
-  const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleDurationChange = useCallback((duration: number) => {
+    setVideoDuration(duration);
+  }, []);
+
+  const handleFileChange = async (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
     const file = event.target.files?.[0];
     if (!file) return;
 
@@ -168,7 +198,8 @@ export default function Home() {
         console.error("Network error during file upload.");
         toast({
           title: "Upload Failed",
-          description: "A network error occurred. Check your CORS configuration.",
+          description:
+            "A network error occurred. Check your CORS configuration.",
           variant: "destructive",
         });
       };
@@ -188,7 +219,7 @@ export default function Home() {
   };
 
   const handleCreateClip = async () => {
-    if (!activeClip || !gcsUri) {
+    if (!editableClipRange || !gcsUri) {
       toast({
         title: "No clip selected",
         description: "Please select a suggested clip first.",
@@ -201,8 +232,8 @@ export default function Home() {
     try {
       const result = await createClip({
         gcsUri,
-        startTime: activeClip.startTime,
-        endTime: activeClip.endTime,
+        startTime: editableClipRange[0],
+        endTime: editableClipRange[1],
       });
 
       toast({
@@ -255,6 +286,7 @@ export default function Home() {
                 onUploadClick={handleUploadClick}
                 clip={activeClip}
                 onClipEnd={() => setActiveClip(null)}
+                onDurationChange={handleDurationChange}
               />
             </div>
 
@@ -269,43 +301,82 @@ export default function Home() {
                   />
                 )}
 
-                {activeClip && gcsUri && (
-                  <Card className="p-4 shadow-md bg-muted/50">
-                    <CardHeader className="p-0 pb-4">
-                      <CardTitle className="text-lg flex items-center gap-2">
-                        <Scissors className="w-5 h-5 text-primary" />
-                        Selected Clip
-                      </CardTitle>
-                      <CardDescription className="pt-1">
-                        This action simulates a backend FFmpeg process to create
-                        a new video file from the selected segment.
-                      </CardDescription>
-                    </CardHeader>
-                    <CardContent className="p-0 space-y-4">
-                      <div>
-                        <p className="text-sm font-medium">
-                          {activeClip.description}
-                        </p>
-                        <p className="text-xs text-muted-foreground mt-1">
-                          Time range: {activeClip.startTime.toFixed(2)}s —{" "}
-                          {activeClip.endTime.toFixed(2)}s
-                        </p>
-                      </div>
-                      <Button
-                        className="w-full"
-                        onClick={handleCreateClip}
-                        disabled={isLoading || isCreatingClip}
-                      >
-                        {isCreatingClip ? (
-                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        ) : (
-                          <Zap className="mr-2 h-4 w-4" />
-                        )}
-                        {isCreatingClip ? "Processing..." : "Create Clip"}
-                      </Button>
-                    </CardContent>
-                  </Card>
-                )}
+                {activeClip &&
+                  gcsUri &&
+                  editableClipRange &&
+                  videoDuration && (
+                    <Card className="p-4 shadow-md bg-muted/50">
+                      <CardHeader className="p-0 pb-4">
+                        <CardTitle className="text-lg flex items-center gap-2">
+                          <Scissors className="w-5 h-5 text-primary" />
+                          Edit Clip
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent className="p-0 space-y-4">
+                        <div>
+                          <p className="text-sm font-medium">
+                            {activeClip.description}
+                          </p>
+                          <p className="text-xs text-muted-foreground mt-1">
+                            Clip Length:{" "}
+                            {(
+                              editableClipRange[1] - editableClipRange[0]
+                            ).toFixed(2)}
+                            s
+                          </p>
+                        </div>
+
+                        <div className="space-y-2">
+                          <Label>Adjust time range</Label>
+                          <Slider
+                            value={editableClipRange}
+                            onValueChange={setEditableClipRange}
+                            max={videoDuration}
+                            step={0.1}
+                            className="my-2"
+                          />
+                          <div className="flex justify-between text-xs text-muted-foreground">
+                            <span>
+                              Start: {editableClipRange[0].toFixed(2)}s
+                            </span>
+                            <span>End: {editableClipRange[1].toFixed(2)}s</span>
+                          </div>
+                        </div>
+
+                        <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 pt-2">
+                          <Button variant="outline" size="sm">
+                            <MicVocal className="mr-2 h-4 w-4" />
+                            Voice Over
+                          </Button>
+                          <Button variant="outline" size="sm">
+                            <Music className="mr-2 h-4 w-4" />
+                            Add Music
+                          </Button>
+                          <Button variant="outline" size="sm">
+                            <Type className="mr-2 h-4 w-4" />
+                            Add Text
+                          </Button>
+                          <Button variant="outline" size="sm">
+                            <Wand2 className="mr-2 h-4 w-4" />
+                            Effects
+                          </Button>
+                        </div>
+
+                        <Button
+                          className="w-full"
+                          onClick={handleCreateClip}
+                          disabled={isLoading || isCreatingClip}
+                        >
+                          {isCreatingClip ? (
+                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          ) : (
+                            <Zap className="mr-2 h-4 w-4" />
+                          )}
+                          {isCreatingClip ? "Processing..." : "Create Clip"}
+                        </Button>
+                      </CardContent>
+                    </Card>
+                  )}
               </div>
             )}
           </main>
