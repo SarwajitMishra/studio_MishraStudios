@@ -17,6 +17,7 @@ const ClipSummarizerInputSchema = z.object({
     .describe(
       "The GCS URI of the video clip. Expected format: 'gs://<bucket-name>/<file-name>'"
     ),
+  contentType: z.string().describe('The MIME type of the video file.'),
 });
 export type ClipSummarizerInput = z.infer<typeof ClipSummarizerInputSchema>;
 
@@ -37,7 +38,7 @@ const prompt = ai.definePrompt({
   output: {schema: ClipSummarizerOutputSchema},
   prompt: `You are an expert video analyst. Analyze the provided video clip and generate a concise summary of its content.
 
-Video: {{media url=gcsUri}}
+Video: {{media url=gcsUri mimeType=contentType}}
 
 Return only the summary text.`,
 });

@@ -114,7 +114,7 @@ export function GenerateClipModal({
                   reject(new Error(`Upload failed with status ${xhr.status}`));
               }
           };
-          xhr.onerror = () => {
+          xhr.onerror = (e) => {
               console.error("Network error during upload.", {
                 status: xhr.status,
                 statusText: xhr.statusText,
@@ -134,7 +134,7 @@ export function GenerateClipModal({
 
       switch (fileType) {
         case "image":
-          result = await imageToVideo({ prompt, gcsUri: gcsUri! });
+          result = await imageToVideo({ prompt, gcsUri: gcsUri!, contentType: file!.type });
           break;
         case "video":
           result = await promptToVideo({ prompt, gcsUri: gcsUri! });

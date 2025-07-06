@@ -18,6 +18,7 @@ const ImageToVideoInputSchema = z.object({
       "The GCS URI of the image file. Expected format: 'gs://<bucket-name>/<file-name>'"
     ),
   prompt: z.string().describe('A natural language prompt for creating the video clip.'),
+  contentType: z.string().describe("The MIME type of the image file."),
 });
 export type ImageToVideoInput = z.infer<typeof ImageToVideoInputSchema>;
 
@@ -44,7 +45,7 @@ const imageToVideoFlow = ai.defineFlow(
     const {media} = await ai.generate({
       model: 'googleai/gemini-2.0-flash-preview-image-generation',
       prompt: [
-        {media: {url: input.gcsUri}},
+        {media: {url: input.gcsUri, mimeType: input.contentType}},
         {text: input.prompt},
       ],
       config: {

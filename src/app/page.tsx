@@ -102,7 +102,7 @@ export default function Home() {
           if (detectedMediaType === 'video') {
             try {
               setIsAnalyzing(true);
-              const result = await videoScanAnalysis({ gcsUri });
+              const result = await videoScanAnalysis({ gcsUri, contentType: file.type });
               setSuggestedClips(result.suggestedClips);
                toast({
                 title: "Analysis Complete!",
@@ -130,7 +130,7 @@ export default function Home() {
         }
       };
       
-      xhr.onerror = () => {
+      xhr.onerror = (e) => {
         setIsLoading(false);
         setProgress(0);
         console.error("Network error during file upload.", {

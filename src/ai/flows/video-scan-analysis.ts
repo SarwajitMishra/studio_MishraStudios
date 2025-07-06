@@ -17,6 +17,7 @@ const VideoScanAnalysisInputSchema = z.object({
     .describe(
       "The GCS URI of the video file to analyze. Expected format: 'gs://<bucket-name>/<file-name>'"
     ),
+  contentType: z.string().describe('The MIME type of the video file.'),
 });
 export type VideoScanAnalysisInput = z.infer<typeof VideoScanAnalysisInputSchema>;
 
@@ -45,7 +46,7 @@ const prompt = ai.definePrompt({
   output: {schema: VideoScanAnalysisOutputSchema},
   prompt: `You are an AI video analysis expert. Your task is to analyze the uploaded video and suggest key moments or scenes that might be interesting for the user to include in their video edit. For each suggestion, provide a concise description and its start and end times in seconds. Focus on identifying highlights, memorable scenes, or moments that would capture viewer attention. Limit the list to no more than 5 suggestions.
 
-Video: {{media url=gcsUri}}`,
+Video: {{media url=gcsUri mimeType=contentType}}`,
 });
 
 const videoScanAnalysisFlow = ai.defineFlow(
