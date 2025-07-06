@@ -17,9 +17,6 @@ import { Zap } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { videoScanAnalysis } from "@/ai/flows/video-scan-analysis";
 
-const MAX_FILE_SIZE_MB = 100;
-const MAX_FILE_SIZE_BYTES = MAX_FILE_SIZE_MB * 1024 * 1024;
-
 export type MediaType = "image" | "video" | "audio";
 export type SuggestedClip = {
   description: string;
@@ -53,15 +50,6 @@ export default function Home() {
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
-      if (file.size > MAX_FILE_SIZE_BYTES) {
-        toast({
-          title: "File Too Large",
-          description: `Please upload a file smaller than ${MAX_FILE_SIZE_MB}MB.`,
-          variant: "destructive",
-        });
-        return;
-      }
-      
       resetState();
       
       const reader = new FileReader();
@@ -134,7 +122,7 @@ export default function Home() {
 
   const loadingMessage = isAnalyzing 
     ? "Analyzing video for key moments..." 
-    : "Reading your file...";
+    : `Reading your file... ${progress}%`;
   
   const showLoadingState = isLoading || isAnalyzing;
 
