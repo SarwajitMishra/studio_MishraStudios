@@ -81,7 +81,7 @@ export default function Home() {
       // 1. Get signed URL from our server
       const { uploadUrl, gcsUri } = await generateUploadUrl({
         fileName: file.name,
-        contentType: file.type,
+        mimeType: file.type,
       });
 
       // 2. Upload the file to GCS
@@ -113,9 +113,9 @@ export default function Home() {
                 return;
               }
               
-              console.log("[CLIENT-DEBUG] Calling videoScanAnalysis with:", { gcsUri, mimeType });
+              const analysisInput = { gcsUri, mimeType };
 
-              const result = await videoScanAnalysis({ gcsUri, mimeType });
+              const result = await videoScanAnalysis(analysisInput);
               
               setSuggestedClips(result.suggestedClips);
                toast({

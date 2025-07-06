@@ -52,7 +52,7 @@ export default function CaptionsPage() {
     try {
       const { uploadUrl, gcsUri } = await generateUploadUrl({
         fileName: file.name,
-        contentType: file.type,
+        mimeType: file.type,
       });
 
       const xhr = new XMLHttpRequest();

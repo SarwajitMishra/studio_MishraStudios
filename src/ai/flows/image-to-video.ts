@@ -33,11 +33,6 @@ const ImageToVideoOutputSchema = z.object({
 export type ImageToVideoOutput = z.infer<typeof ImageToVideoOutputSchema>;
 
 export async function imageToVideo(input: ImageToVideoInput): Promise<ImageToVideoOutput> {
-  console.log('[SERVER-DEBUG] imageToVideo flow invoked with input:', JSON.stringify(input, null, 2));
-  if (!input || !input.gcsUri || !input.mimeType) {
-    console.error('[SERVER-ERROR] Invalid input received in imageToVideo:', input);
-    throw new Error('Invalid input: The GCS URI or MIME type is missing for image to video conversion.');
-  }
   return imageToVideoFlow(input);
 }
 
@@ -48,9 +43,8 @@ const imageToVideoFlow = ai.defineFlow(
     outputSchema: ImageToVideoOutputSchema,
   },
   async (input) => {
-    console.log('[SERVER-DEBUG] imageToVideoFlow started with input:', JSON.stringify(input, null, 2));
-    if (!input || !input.gcsUri) {
-      throw new Error('Invalid input: GCS URI is missing for image to video conversion.');
+    if (!input?.mimeType || typeof input.mimeType !== 'string') {
+      throw new Error(`[SERVER-ERROR] mimeType is missing or invalid in imageToVideo. Received input: ${JSON.stringify(input)}`);
     }
     const base64Image = await downloadFileAsBase64(input.gcsUri);
     const {media} = await ai.generate({

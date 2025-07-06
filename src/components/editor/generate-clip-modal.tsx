@@ -88,7 +88,7 @@ export function GenerateClipModal({
         setProgress(0);
         const uploadData = await generateUploadUrl({
           fileName: file.name,
-          contentType: file.type,
+          mimeType: file.type,
         });
         gcsUri = uploadData.gcsUri;
         

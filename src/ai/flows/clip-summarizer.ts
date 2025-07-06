@@ -30,11 +30,6 @@ export type ClipSummarizerOutput = z.infer<typeof ClipSummarizerOutputSchema>;
 export async function clipSummarizer(
   input: ClipSummarizerInput
 ): Promise<ClipSummarizerOutput> {
-  console.log('[SERVER-DEBUG] clipSummarizer flow invoked with input:', JSON.stringify(input, null, 2));
-  if (!input || !input.gcsUri || !input.mimeType) {
-    console.error('[SERVER-ERROR] Invalid input received in clipSummarizer:', input);
-    throw new Error('Invalid input: The GCS URI or MIME type is missing for clip summarization.');
-  }
   return clipSummarizerFlow(input);
 }
 
@@ -45,9 +40,8 @@ const clipSummarizerFlow = ai.defineFlow(
     outputSchema: ClipSummarizerOutputSchema,
   },
   async (input) => {
-    console.log('[SERVER-DEBUG] clipSummarizerFlow started with input:', JSON.stringify(input, null, 2));
-    if (!input || !input.gcsUri) {
-      throw new Error('Invalid input: GCS URI is missing for clip summarization.');
+    if (!input?.mimeType || typeof input.mimeType !== 'string') {
+      throw new Error(`[SERVER-ERROR] mimeType is missing or invalid in clipSummarizer. Received input: ${JSON.stringify(input)}`);
     }
     const base64Video = await downloadFileAsBase64(input.gcsUri);
     const { output } = await ai.generate({

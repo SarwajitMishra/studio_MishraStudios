@@ -8,7 +8,7 @@ import { generateV4UploadSignedUrl } from '@/services/storage';
 
 const GenerateUploadUrlInputSchema = z.object({
   fileName: z.string().describe('The name of the file to be uploaded.'),
-  contentType: z.string().describe('The MIME type of the file.'),
+  mimeType: z.string().describe('The MIME type of the file.'),
 });
 export type GenerateUploadUrlInput = z.infer<typeof GenerateUploadUrlInputSchema>;
 
@@ -30,7 +30,7 @@ const generateUploadUrlFlow = ai.defineFlow(
     inputSchema: GenerateUploadUrlInputSchema,
     outputSchema: GenerateUploadUrlOutputSchema,
   },
-  async ({ fileName, contentType }) => {
-    return generateV4UploadSignedUrl(fileName, contentType);
+  async ({ fileName, mimeType }) => {
+    return generateV4UploadSignedUrl(fileName, mimeType);
   }
 );

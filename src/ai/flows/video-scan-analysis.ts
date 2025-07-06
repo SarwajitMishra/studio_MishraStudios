@@ -38,11 +38,6 @@ const VideoScanAnalysisOutputSchema = z.object({
 export type VideoScanAnalysisOutput = z.infer<typeof VideoScanAnalysisOutputSchema>;
 
 export async function videoScanAnalysis(input: VideoScanAnalysisInput): Promise<VideoScanAnalysisOutput> {
-  console.log('[SERVER-DEBUG] videoScanAnalysis flow invoked with input:', JSON.stringify(input, null, 2));
-  if (!input || !input.gcsUri || !input.mimeType) {
-    console.error('[SERVER-ERROR] Invalid input received in videoScanAnalysis:', input);
-    throw new Error('Invalid input: The GCS URI or MIME type is missing.');
-  }
   return videoScanAnalysisFlow(input);
 }
 
@@ -53,9 +48,8 @@ const videoScanAnalysisFlow = ai.defineFlow(
     outputSchema: VideoScanAnalysisOutputSchema,
   },
   async (input) => {
-    console.log('[SERVER-DEBUG] videoScanAnalysisFlow started with input:', JSON.stringify(input, null, 2));
-    if (!input || !input.gcsUri) {
-      throw new Error('Invalid input: GCS URI is missing for video scan analysis.');
+    if (!input?.mimeType || typeof input.mimeType !== 'string') {
+        throw new Error(`[SERVER-ERROR] mimeType is missing or invalid in videoScanAnalysis. Received input: ${JSON.stringify(input)}`);
     }
     const base64Video = await downloadFileAsBase64(input.gcsUri);
     
