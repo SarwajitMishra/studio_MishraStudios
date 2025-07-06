@@ -40,9 +40,6 @@ const clipSummarizerFlow = ai.defineFlow(
     outputSchema: ClipSummarizerOutputSchema,
   },
   async (input) => {
-    if (!input?.mimeType || typeof input.mimeType !== 'string') {
-      throw new Error(`[SERVER-ERROR] mimeType is missing or invalid in clipSummarizer. Received input: ${JSON.stringify(input)}`);
-    }
     const base64Video = await downloadFileAsBase64(input.gcsUri);
     const { output } = await ai.generate({
       output: { schema: ClipSummarizerOutputSchema },

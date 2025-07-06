@@ -43,9 +43,6 @@ const imageToVideoFlow = ai.defineFlow(
     outputSchema: ImageToVideoOutputSchema,
   },
   async (input) => {
-    if (!input?.mimeType || typeof input.mimeType !== 'string') {
-      throw new Error(`[SERVER-ERROR] mimeType is missing or invalid in imageToVideo. Received input: ${JSON.stringify(input)}`);
-    }
     const base64Image = await downloadFileAsBase64(input.gcsUri);
     const {media} = await ai.generate({
       model: 'googleai/gemini-2.0-flash-preview-image-generation',

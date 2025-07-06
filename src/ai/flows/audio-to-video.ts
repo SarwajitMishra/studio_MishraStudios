@@ -43,9 +43,6 @@ const audioToVideoFlow = ai.defineFlow(
     outputSchema: AudioToVideoOutputSchema,
   },
   async (input) => {
-    if (!input?.mimeType || typeof input.mimeType !== 'string') {
-      throw new Error(`[SERVER-ERROR] mimeType is missing or invalid in audioToVideo. Received input: ${JSON.stringify(input)}`);
-    }
     const base64Audio = await downloadFileAsBase64(input.gcsUri);
     // A more advanced implementation could transcribe the audio to text first.
     // For now, we will use the audio as context for generating a representative image.
