@@ -10,6 +10,7 @@
 
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
+import { downloadFileAsBase64 } from '@/services/storage';
 
 const AutoCaptionInputSchema = z.object({
   gcsUri: z
@@ -39,11 +40,13 @@ const autoCaptionFlow = ai.defineFlow(
     outputSchema: AutoCaptionOutputSchema,
   },
   async (input) => {
+    const base64Video = await downloadFileAsBase64(input.gcsUri);
+
     const { output } = await ai.generate({
       output: { schema: AutoCaptionOutputSchema },
       prompt: [
         { text: `You are an expert audio transcriber. Your task is to generate captions for the provided video clip by transcribing its audio content. Return only the transcribed text.` },
-        { media: { url: input.gcsUri, mimeType: input.mimeType } },
+        { media: { inlineData: { data: base64Video, mimeType: input.mimeType } } },
       ],
     });
     return output!;

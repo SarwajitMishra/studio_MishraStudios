@@ -10,6 +10,7 @@
 
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
+import { downloadFileAsBase64 } from '@/services/storage';
 
 const ImageToVideoInputSchema = z.object({
   gcsUri: z
@@ -42,10 +43,11 @@ const imageToVideoFlow = ai.defineFlow(
     outputSchema: ImageToVideoOutputSchema,
   },
   async (input) => {
+    const base64Image = await downloadFileAsBase64(input.gcsUri);
     const {media} = await ai.generate({
       model: 'googleai/gemini-2.0-flash-preview-image-generation',
       prompt: [
-        {media: {url: input.gcsUri, mimeType: input.mimeType}},
+        {media: { inlineData: { data: base64Image, mimeType: input.mimeType } }},
         {text: input.prompt},
       ],
       config: {

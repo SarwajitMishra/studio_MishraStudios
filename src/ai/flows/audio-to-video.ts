@@ -10,6 +10,7 @@
 
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
+import { downloadFileAsBase64 } from '@/services/storage';
 
 const AudioToVideoInputSchema = z.object({
   gcsUri: z
@@ -43,12 +44,13 @@ const audioToVideoFlow = ai.defineFlow(
     outputSchema: AudioToVideoOutputSchema,
   },
   async (input) => {
+    const base64Audio = await downloadFileAsBase64(input.gcsUri);
     // A more advanced implementation could transcribe the audio to text first.
     // For now, we will use the audio as context for generating a representative image.
     const { media } = await ai.generate({
       model: 'googleai/gemini-2.0-flash-preview-image-generation',
       prompt: [
-        { media: { url: input.gcsUri, mimeType: input.mimeType } },
+        { media: { inlineData: { data: base64Audio, mimeType: input.mimeType } } },
         { text: `Based on the provided audio, generate a new image that visually represents the sound and incorporates the following prompt: ${input.prompt}` },
       ],
       config: {

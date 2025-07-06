@@ -10,6 +10,7 @@
 
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
+import { downloadFileAsBase64 } from '@/services/storage';
 
 const ClipSummarizerInputSchema = z.object({
   gcsUri: z
@@ -39,11 +40,12 @@ const clipSummarizerFlow = ai.defineFlow(
     outputSchema: ClipSummarizerOutputSchema,
   },
   async (input) => {
+    const base64Video = await downloadFileAsBase64(input.gcsUri);
     const { output } = await ai.generate({
       output: { schema: ClipSummarizerOutputSchema },
       prompt: [
         { text: `You are an expert video analyst. Analyze the provided video clip and generate a concise summary of its content. Return only the summary text.` },
-        { media: { url: input.gcsUri, mimeType: input.mimeType } },
+        { media: { inlineData: { data: base64Video, mimeType: input.mimeType } } },
       ],
     });
     return output!;

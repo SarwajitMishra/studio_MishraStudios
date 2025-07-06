@@ -39,7 +39,21 @@ export async function generateV4UploadSignedUrl(fileName: string, contentType: s
   };
 
   const [uploadUrl] = await file.getSignedUrl(options);
-  const gcsUri = `${bucketName}/${fileName}`;
+  const gcsUri = `gs://${bucketName}/${fileName}`;
 
   return { uploadUrl, gcsUri };
+}
+
+/**
+ * Downloads a file from Google Cloud Storage and returns it as a Base64 encoded string.
+ * @param gcsUri The GCS URI of the file to download (e.g., 'gs://bucket-name/file-name').
+ * @returns A promise that resolves to the Base64 encoded content of the file.
+ */
+export async function downloadFileAsBase64(gcsUri: string): Promise<string> {
+  const [bucketNameFromUri, ...filePathParts] = gcsUri.replace('gs://', '').split('/');
+  const fileName = filePathParts.join('/');
+
+  const file = storage.bucket(bucketNameFromUri).file(fileName);
+  const [contents] = await file.download();
+  return contents.toString('base64');
 }
