@@ -28,7 +28,11 @@ export async function generateV4UploadSignedUrl(fileName: string, mimeType: stri
   if (!bucketName) {
     throw new Error("GCS_BUCKET_NAME environment variable is not set.");
   }
-  const bucket = storage.bucket(bucketName);
+
+  // Defensively remove any "gs://" prefix from the bucket name to prevent duplication.
+  const cleanBucketName = bucketName.replace(/^gs:\/\//, '');
+
+  const bucket = storage.bucket(cleanBucketName);
   const file = bucket.file(fileName);
 
   const options = {
@@ -39,7 +43,7 @@ export async function generateV4UploadSignedUrl(fileName: string, mimeType: stri
   };
 
   const [uploadUrl] = await file.getSignedUrl(options);
-  const gcsUri = `gs://${bucketName}/${fileName}`;
+  const gcsUri = `gs://${cleanBucketName}/${fileName}`;
 
   return { uploadUrl, gcsUri };
 }
@@ -50,8 +54,6 @@ export async function generateV4UploadSignedUrl(fileName: string, mimeType: stri
  * @returns A promise that resolves to the Base64 encoded content of the file.
  */
 export async function downloadFileAsBase64(gcsUri: string): Promise<string> {
-    console.log(`[SERVER-DEBUG] downloadFileAsBase64 received raw URI: '${gcsUri}'`);
-
     if (!gcsUri) {
         throw new Error('GCS URI is empty or undefined.');
     }
@@ -71,8 +73,6 @@ export async function downloadFileAsBase64(gcsUri: string): Promise<string> {
         throw new Error(`Could not parse file name from URI: '${gcsUri}'`);
     }
     
-    console.log(`[SERVER-DEBUG] Parsed Bucket: '${bucketNameFromUri}', Parsed FileName: '${fileName}'`);
-
     try {
         const file = storage.bucket(bucketNameFromUri).file(fileName);
         const [contents] = await file.download();
