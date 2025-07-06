@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useRef, useState } from "react";
@@ -17,12 +16,13 @@ import { Dialog, DialogTrigger } from "@/components/ui/dialog";
 import { Zap } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
-const MAX_FILE_SIZE_MB = 20;
+const MAX_FILE_SIZE_MB = 100;
 const MAX_FILE_SIZE_BYTES = MAX_FILE_SIZE_MB * 1024 * 1024;
 
 export default function Home() {
   const [videoUrl, setVideoUrl] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [progress, setProgress] = useState(0);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
 
@@ -43,7 +43,15 @@ export default function Home() {
       }
 
       const reader = new FileReader();
-      reader.onloadstart = () => setIsLoading(true);
+      reader.onloadstart = () => {
+        setIsLoading(true);
+        setProgress(0);
+      };
+      reader.onprogress = (e) => {
+        if (e.lengthComputable) {
+          setProgress(Math.round((e.loaded / e.total) * 100));
+        }
+      };
       reader.onload = (e) => {
         const dataUri = e.target?.result as string;
         const mimeType = dataUri.split(":")[1].split(";")[0];
@@ -54,6 +62,7 @@ export default function Home() {
       };
       reader.onerror = () => {
         setIsLoading(false);
+        setProgress(0);
         toast({
           title: "File Read Error",
           description: "There was an issue reading your file.",
@@ -83,6 +92,7 @@ export default function Home() {
             <VideoPreview
               videoUrl={videoUrl}
               isLoading={isLoading}
+              progress={progress}
               onUploadClick={handleUploadClick}
             />
             <div className="h-[180px] sm:h-[220px] md:h-[260px] lg:h-[320px]">
@@ -100,11 +110,7 @@ export default function Home() {
               <span className="sr-only">Generate Clip</span>
             </Button>
           </DialogTrigger>
-          <GenerateClipModal
-            isLoading={isLoading}
-            setIsLoading={setIsLoading}
-            setVideoUrl={setVideoUrl}
-          />
+          <GenerateClipModal setVideoUrl={setVideoUrl} />
         </Dialog>
       </SidebarInset>
     </SidebarProvider>

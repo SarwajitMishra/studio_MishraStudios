@@ -7,6 +7,7 @@ import { SidebarNav } from "@/components/layout/sidebar-nav";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
+import { Progress } from "@/components/ui/progress";
 import {
   Sidebar,
   SidebarInset,
@@ -16,14 +17,16 @@ import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2, Zap, Captions, Upload, FileVideo } from "lucide-react";
 
-const MAX_FILE_SIZE_MB = 20;
+const MAX_FILE_SIZE_MB = 100;
 const MAX_FILE_SIZE_BYTES = MAX_FILE_SIZE_MB * 1024 * 1024;
 
 export default function CaptionsPage() {
   const [videoDataUri, setVideoDataUri] = useState<string | null>(null);
   const [fileName, setFileName] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [isGenerating, setIsGenerating] = useState(false);
   const [captions, setCaptions] = useState<string | null>(null);
+  const [progress, setProgress] = useState(0);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
 
@@ -40,7 +43,15 @@ export default function CaptionsPage() {
       }
       if (file.type.startsWith("video/")) {
         const reader = new FileReader();
-        reader.onloadstart = () => setIsLoading(true);
+        reader.onloadstart = () => {
+          setIsLoading(true);
+          setProgress(0);
+        };
+        reader.onprogress = (e) => {
+          if (e.lengthComputable) {
+            setProgress(Math.round((e.loaded / e.total) * 100));
+          }
+        };
         reader.onload = (e) => {
           setVideoDataUri(e.target?.result as string);
           setFileName(file.name);
@@ -49,6 +60,7 @@ export default function CaptionsPage() {
         };
         reader.onerror = () => {
           setIsLoading(false);
+          setProgress(0);
           toast({
             title: "File Read Error",
             description: "There was an issue reading your file.",
@@ -75,7 +87,7 @@ export default function CaptionsPage() {
       });
       return;
     }
-    setIsLoading(true);
+    setIsGenerating(true);
     setCaptions(null);
     try {
       const result = await autoCaption({ videoDataUri });
@@ -95,7 +107,7 @@ export default function CaptionsPage() {
         variant: "destructive",
       });
     } finally {
-      setIsLoading(false);
+      setIsGenerating(false);
     }
   };
 
@@ -129,15 +141,21 @@ export default function CaptionsPage() {
                     variant="outline"
                     className="w-full"
                     onClick={() => fileInputRef.current?.click()}
-                    disabled={isLoading}
+                    disabled={isLoading || isGenerating}
                   >
                     <Upload className="mr-2 h-4 w-4" />
                     {fileName ? "Change Video" : "Upload Video"}
                   </Button>
-                  {fileName && (
+                  {fileName && !isLoading && (
                     <div className="text-sm text-muted-foreground flex items-center gap-2 pt-2">
                       <FileVideo className="h-4 w-4" />
                       <span>{fileName}</span>
+                    </div>
+                  )}
+                  {isLoading && (
+                     <div className="space-y-2 pt-2">
+                      <Progress value={progress} className="w-full" />
+                      <p className="text-xs text-muted-foreground text-center">Loading... {progress}%</p>
                     </div>
                   )}
                 </div>
@@ -146,14 +164,14 @@ export default function CaptionsPage() {
                   className="w-full"
                   size="lg"
                   onClick={handleGenerateCaptions}
-                  disabled={isLoading || !videoDataUri}
+                  disabled={isLoading || isGenerating || !videoDataUri}
                 >
-                  {isLoading ? (
+                  {isGenerating ? (
                     <Loader2 className="mr-2 h-5 w-5 animate-spin" />
                   ) : (
                     <Zap className="mr-2 h-5 w-5" />
                   )}
-                  {isLoading ? "Processing..." : "Generate Captions"}
+                  {isGenerating ? "Generating..." : "Generate Captions"}
                 </Button>
                 {captions && (
                   <div className="space-y-2 pt-4">

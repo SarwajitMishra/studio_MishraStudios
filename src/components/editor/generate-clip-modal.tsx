@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, useRef } from "react";
@@ -10,7 +9,9 @@ import {
   DialogTitle,
   DialogDescription,
   DialogFooter,
+  DialogClose,
 } from "@/components/ui/dialog";
+import { Progress } from "@/components/ui/progress";
 import { Loader2, Sparkles, Upload, X } from "lucide-react";
 import { textToVideo } from "@/ai/flows/text-to-video";
 import { imageToVideo } from "@/ai/flows/image-to-video";
@@ -19,17 +20,13 @@ import { audioToVideo } from "@/ai/flows/audio-to-video";
 import { useToast } from "@/hooks/use-toast";
 
 interface GenerateClipModalProps {
-  isLoading: boolean;
-  setIsLoading: (isLoading: boolean) => void;
   setVideoUrl: (url: string | null) => void;
 }
 
-const MAX_FILE_SIZE_MB = 20;
+const MAX_FILE_SIZE_MB = 100;
 const MAX_FILE_SIZE_BYTES = MAX_FILE_SIZE_MB * 1024 * 1024;
 
 export function GenerateClipModal({
-  isLoading,
-  setIsLoading,
   setVideoUrl,
 }: GenerateClipModalProps) {
   const [prompt, setPrompt] = useState(
@@ -37,6 +34,9 @@ export function GenerateClipModal({
   );
   const [fileDataUri, setFileDataUri] = useState<string | null>(null);
   const [fileName, setFileName] = useState<string | null>(null);
+  const [isReadingFile, setIsReadingFile] = useState(false);
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [progress, setProgress] = useState(0);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
 
@@ -56,14 +56,23 @@ export function GenerateClipModal({
         return;
       }
       const reader = new FileReader();
-      reader.onloadstart = () => setIsLoading(true);
+      reader.onloadstart = () => {
+        setIsReadingFile(true);
+        setProgress(0);
+      };
+      reader.onprogress = (e) => {
+        if (e.lengthComputable) {
+          setProgress(Math.round((e.loaded / e.total) * 100));
+        }
+      };
       reader.onload = (e) => {
         setFileDataUri(e.target?.result as string);
         setFileName(file.name);
-        setIsLoading(false);
+        setIsReadingFile(false);
       };
       reader.onerror = () => {
-        setIsLoading(false);
+        setIsReadingFile(false);
+        setProgress(0);
         toast({
           title: "File Read Error",
           description: "There was an issue reading your file.",
@@ -92,7 +101,7 @@ export function GenerateClipModal({
       return;
     }
 
-    setIsLoading(true);
+    setIsGenerating(true);
     setVideoUrl(null);
 
     try {
@@ -150,9 +159,11 @@ export function GenerateClipModal({
         variant: "destructive",
       });
     } finally {
-      setIsLoading(false);
+      setIsGenerating(false);
     }
   };
+  
+  const isLoading = isReadingFile || isGenerating;
 
   return (
     <DialogContent className="sm:max-w-2xl">
@@ -170,6 +181,7 @@ export function GenerateClipModal({
           rows={4}
           value={prompt}
           onChange={(e) => setPrompt(e.target.value)}
+          disabled={isLoading}
         />
         <input
           type="file"
@@ -179,23 +191,31 @@ export function GenerateClipModal({
           className="hidden"
         />
         {fileName ? (
-          <div className="text-sm text-muted-foreground flex items-center justify-between">
-            <div className="flex items-center gap-2 truncate">
-              <span>Attached:</span>
-              <span className="font-medium text-foreground truncate">
-                {fileName}
-              </span>
+          <div className="text-sm text-muted-foreground">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2 truncate">
+                <span>Attached:</span>
+                <span className="font-medium text-foreground truncate">
+                  {fileName}
+                </span>
+              </div>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-6 w-6 shrink-0"
+                onClick={clearUpload}
+                disabled={isLoading}
+              >
+                <X className="h-4 w-4" />
+                <span className="sr-only">Remove file</span>
+              </Button>
             </div>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-6 w-6 shrink-0"
-              onClick={clearUpload}
-              disabled={isLoading}
-            >
-              <X className="h-4 w-4" />
-              <span className="sr-only">Remove file</span>
-            </Button>
+            {isReadingFile && (
+              <div className="space-y-1 pt-2">
+                <Progress value={progress} className="w-full" />
+                <p className="text-xs text-muted-foreground text-center">Reading file... {progress}%</p>
+              </div>
+            )}
           </div>
         ) : (
           <Button variant="outline" onClick={handleUploadClick} disabled={isLoading}>
@@ -205,18 +225,20 @@ export function GenerateClipModal({
         )}
       </div>
       <DialogFooter>
+        <DialogClose asChild>
+          <Button variant="ghost" disabled={isLoading}>Cancel</Button>
+        </DialogClose>
         <Button
-          className="w-full font-semibold text-base"
+          className="font-semibold text-base"
           onClick={handleApplyPrompt}
           disabled={isLoading || (!prompt && !fileDataUri)}
-          size="lg"
         >
-          {isLoading ? (
+          {isGenerating ? (
             <Loader2 className="mr-2 h-5 w-5 animate-spin" />
           ) : (
             <Sparkles className="mr-2 h-5 w-5" />
           )}
-          <span>{isLoading ? "Processing..." : "Generate"}</span>
+          <span>{isGenerating ? "Generating..." : "Generate"}</span>
         </Button>
       </DialogFooter>
     </DialogContent>

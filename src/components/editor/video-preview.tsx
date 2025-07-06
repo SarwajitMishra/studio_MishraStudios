@@ -3,6 +3,7 @@ import { AspectRatio } from "@/components/ui/aspect-ratio";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Slider } from "@/components/ui/slider";
+import { Progress } from "@/components/ui/progress";
 import {
   Play,
   Pause,
@@ -19,12 +20,14 @@ import {
 interface VideoPreviewProps {
   videoUrl: string | null;
   isLoading: boolean;
+  progress: number;
   onUploadClick: () => void;
 }
 
 export function VideoPreview({
   videoUrl,
   isLoading,
+  progress,
   onUploadClick,
 }: VideoPreviewProps) {
   const showPlaceholder = !videoUrl && !isLoading;
@@ -40,13 +43,14 @@ export function VideoPreview({
             className="w-full rounded-lg bg-muted flex items-center justify-center"
           >
             {showLoadingState && (
-              <div className="w-full h-full flex flex-col items-center justify-center gap-4 text-primary-foreground">
+              <div className="w-full max-w-sm flex flex-col items-center justify-center gap-4 text-primary-foreground p-4">
                 <Loader2 className="w-12 h-12 animate-spin text-primary" />
                 <p className="text-lg font-medium text-foreground">
-                  Processing your file...
+                  Reading your file...
                 </p>
+                <Progress value={progress} className="w-full" />
                 <p className="text-sm text-muted-foreground">
-                  This may take a few moments.
+                  This may take a moment for larger files.
                 </p>
               </div>
             )}
@@ -62,7 +66,7 @@ export function VideoPreview({
                   Start Creating with Mishra Studios
                 </h2>
                 <p className="text-base sm:text-lg text-muted-foreground max-w-md">
-                  Upload a video or enter a prompt to begin editing magic.
+                  Upload a video or use AI to begin your masterpiece.
                 </p>
                 <Button
                   size="lg"
