@@ -44,6 +44,7 @@ const promptToVideoFlow = ai.defineFlow(
     outputSchema: PromptToVideoOutputSchema,
   },
   async (input) => {
+    console.log('[DEBUG] promptToVideoFlow received input:', input);
     const base64Video = await downloadFileAsBase64(input.gcsUri);
     const { media } = await ai.generate({
       model: 'googleai/gemini-2.0-flash-preview-image-generation',

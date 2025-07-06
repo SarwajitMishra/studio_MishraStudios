@@ -48,6 +48,7 @@ const videoScanAnalysisFlow = ai.defineFlow(
     outputSchema: VideoScanAnalysisOutputSchema,
   },
   async (input) => {
+    console.log('[DEBUG] videoScanAnalysisFlow received input:', input);
     const base64Video = await downloadFileAsBase64(input.gcsUri);
     
     const { output } = await ai.generate({

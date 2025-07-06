@@ -50,28 +50,25 @@ export async function generateV4UploadSignedUrl(fileName: string, mimeType: stri
  * @returns A promise that resolves to the Base64 encoded content of the file.
  */
 export async function downloadFileAsBase64(gcsUri: string): Promise<string> {
-    if (!gcsUri || !gcsUri.startsWith('gs://')) {
-        throw new Error(`Invalid GCS URI: URI must start with 'gs://'. Received: '${gcsUri}'`);
-    }
-    
-    const path = gcsUri.substring('gs://'.length);
-    const slashIndex = path.indexOf('/');
-    
-    if (slashIndex === -1 || slashIndex === 0 || slashIndex === path.length - 1) {
-        throw new Error(`Invalid GCS URI format: Cannot find bucket and file name. Received: '${gcsUri}'`);
+    console.log(`[DEBUG] downloadFileAsBase64 received gcsUri: '${gcsUri}'`);
+
+    const match = gcsUri.match(/^gs:\/\/([^\/]+)\/(.+)$/);
+    if (!match) {
+        throw new Error(`Invalid GCS URI format. Expected 'gs://<bucket-name>/<file-name>'. Received: '${gcsUri}'`);
     }
 
-    const bucketNameFromUri = path.substring(0, slashIndex);
-    const fileName = path.substring(slashIndex + 1);
+    const bucketNameFromUri = match[1];
+    const fileName = match[2];
     
-    if (!bucketNameFromUri) {
-        throw new Error(`Invalid GCS URI: Bucket name is missing. Received: '${gcsUri}'`);
-    }
-    if (!fileName) {
-        throw new Error(`Invalid GCS URI: File name is missing. Received: '${gcsUri}'`);
-    }
+    console.log(`[DEBUG] Parsed bucket: '${bucketNameFromUri}', file: '${fileName}'`);
 
     const file = storage.bucket(bucketNameFromUri).file(fileName);
-    const [contents] = await file.download();
-    return contents.toString('base64');
+    try {
+        const [contents] = await file.download();
+        console.log(`[DEBUG] Successfully downloaded file '${fileName}' from bucket '${bucketNameFromUri}'.`);
+        return contents.toString('base64');
+    } catch (error: any) {
+        console.error(`[DEBUG] GCS download failed. Error: ${error.message}`, { gcsUri });
+        throw new Error(`Failed to download file from GCS: ${error.message}`);
+    }
 }

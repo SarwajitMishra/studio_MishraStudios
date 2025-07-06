@@ -40,6 +40,7 @@ const clipSummarizerFlow = ai.defineFlow(
     outputSchema: ClipSummarizerOutputSchema,
   },
   async (input) => {
+    console.log('[DEBUG] clipSummarizerFlow received input:', input);
     const base64Video = await downloadFileAsBase64(input.gcsUri);
     const { output } = await ai.generate({
       output: { schema: ClipSummarizerOutputSchema },

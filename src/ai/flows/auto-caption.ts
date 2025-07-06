@@ -40,6 +40,7 @@ const autoCaptionFlow = ai.defineFlow(
     outputSchema: AutoCaptionOutputSchema,
   },
   async (input) => {
+    console.log('[DEBUG] autoCaptionFlow received input:', input);
     const base64Video = await downloadFileAsBase64(input.gcsUri);
 
     const { output } = await ai.generate({
