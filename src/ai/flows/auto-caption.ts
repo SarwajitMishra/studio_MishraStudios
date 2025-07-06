@@ -12,10 +12,10 @@ import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
 
 const AutoCaptionInputSchema = z.object({
-  videoDataUri: z
+  gcsUri: z
     .string()
     .describe(
-      "A video clip, as a data URI that must include a MIME type and use Base64 encoding. Expected format: 'data:<mimetype>;base64,<encoded_data>'."
+      "The GCS URI of the video clip. Expected format: 'gs://<bucket-name>/<file-name>'"
     ),
 });
 export type AutoCaptionInput = z.infer<typeof AutoCaptionInputSchema>;
@@ -37,7 +37,7 @@ const prompt = ai.definePrompt({
   output: {schema: AutoCaptionOutputSchema},
   prompt: `You are an expert audio transcriber. Your task is to generate captions for the provided video clip by transcribing its audio content.
 
-Video: {{media url=videoDataUri}}
+Video: {{media url=gcsUri}}
 
 Return only the transcribed text.`,
 });

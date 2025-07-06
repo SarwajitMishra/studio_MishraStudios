@@ -12,10 +12,10 @@ import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
 
 const VideoScanAnalysisInputSchema = z.object({
-  videoDataUri: z
+  gcsUri: z
     .string()
     .describe(
-      "A video file as a data URI that must include a MIME type and use Base64 encoding. Expected format: 'data:<mimetype>;base64,<encoded_data>'."
+      "The GCS URI of the video file to analyze. Expected format: 'gs://<bucket-name>/<file-name>'"
     ),
 });
 export type VideoScanAnalysisInput = z.infer<typeof VideoScanAnalysisInputSchema>;
@@ -45,7 +45,7 @@ const prompt = ai.definePrompt({
   output: {schema: VideoScanAnalysisOutputSchema},
   prompt: `You are an AI video analysis expert. Your task is to analyze the uploaded video and suggest key moments or scenes that might be interesting for the user to include in their video edit. For each suggestion, provide a concise description and its start and end times in seconds. Focus on identifying highlights, memorable scenes, or moments that would capture viewer attention. Limit the list to no more than 5 suggestions.
 
-Video: {{media url=videoDataUri}}`,
+Video: {{media url=gcsUri}}`,
 });
 
 const videoScanAnalysisFlow = ai.defineFlow(

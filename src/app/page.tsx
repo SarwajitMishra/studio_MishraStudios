@@ -16,6 +16,7 @@ import { Dialog, DialogTrigger } from "@/components/ui/dialog";
 import { Zap } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { videoScanAnalysis } from "@/ai/flows/video-scan-analysis";
+import { generateUploadUrl } from "@/ai/flows/generate-upload-url";
 
 export type MediaType = "image" | "video" | "audio";
 export type SuggestedClip = {
@@ -23,9 +24,6 @@ export type SuggestedClip = {
   startTime: number;
   endTime: number;
 };
-
-const MAX_FILE_SIZE_MB = 100;
-const MAX_FILE_SIZE_BYTES = MAX_FILE_SIZE_MB * 1024 * 1024;
 
 export default function Home() {
   const [videoUrl, setVideoUrl] = useState<string | null>(null);
@@ -50,50 +48,61 @@ export default function Home() {
     setProgress(0);
   }
 
-  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
-    if (file) {
-      if (file.size > MAX_FILE_SIZE_BYTES) {
+    if (!file) return;
+
+    resetState();
+    
+    // For local preview
+    const objectUrl = URL.createObjectURL(file);
+    const mimeType = file.type;
+    let detectedMediaType: MediaType | null = null;
+    if (mimeType.startsWith("image/")) detectedMediaType = 'image';
+    else if (mimeType.startsWith("video/")) detectedMediaType = 'video';
+    else if (mimeType.startsWith("audio/")) detectedMediaType = 'audio';
+    
+    if (detectedMediaType) {
+        setMediaType(detectedMediaType);
+        setVideoUrl(objectUrl);
+    } else {
         toast({
-          title: "File Too Large",
-          description: `For browser stability, please upload a file smaller than ${MAX_FILE_SIZE_MB}MB.`,
-          variant: "destructive",
+            title: "Unsupported File Type",
+            description: "Please upload an image, video, or audio file.",
+            variant: "destructive",
         });
         return;
-      }
+    }
+    
+    setIsLoading(true);
+    setProgress(0);
 
-      resetState();
-      
-      const reader = new FileReader();
-      reader.onloadstart = () => {
-        setIsLoading(true);
-      };
-      reader.onprogress = (e) => {
-        if (e.lengthComputable) {
-          setProgress(Math.round((e.loaded / e.total) * 100));
+    try {
+      // 1. Get signed URL from our server
+      const { uploadUrl, gcsUri } = await generateUploadUrl({
+        fileName: file.name,
+        contentType: file.type,
+      });
+
+      // 2. Upload the file to GCS
+      const xhr = new XMLHttpRequest();
+      xhr.open("PUT", uploadUrl, true);
+      xhr.setRequestHeader("Content-Type", file.type);
+
+      xhr.upload.onprogress = (event) => {
+        if (event.lengthComputable) {
+          const percentComplete = Math.round((event.loaded / event.total) * 100);
+          setProgress(percentComplete);
         }
       };
-      reader.onload = async (e) => {
-        const dataUri = e.target?.result as string;
-        const mimeType = dataUri.split(":")[1].split(";")[0];
-        
-        let detectedMediaType: MediaType | null = null;
-        if (mimeType.startsWith("image/")) {
-          detectedMediaType = 'image';
-        } else if (mimeType.startsWith("video/")) {
-          detectedMediaType = 'video';
-        } else if (mimeType.startsWith("audio/")) {
-          detectedMediaType = 'audio';
-        }
 
-        if (detectedMediaType) {
-          setMediaType(detectedMediaType);
-          setVideoUrl(dataUri);
-          
-          if(detectedMediaType === 'video') {
+      xhr.onload = async () => {
+        if (xhr.status >= 200 && xhr.status < 300) {
+          setIsLoading(false);
+          if (detectedMediaType === 'video') {
             try {
               setIsAnalyzing(true);
-              const result = await videoScanAnalysis({ videoDataUri: dataUri });
+              const result = await videoScanAnalysis({ gcsUri });
               setSuggestedClips(result.suggestedClips);
                toast({
                 title: "Analysis Complete!",
@@ -111,30 +120,31 @@ export default function Home() {
             }
           }
         } else {
-           toast({
-            title: "Unsupported File Type",
-            description: "Please upload an image, video, or audio file.",
-            variant: "destructive",
-          });
+          throw new Error(`Upload failed with status: ${xhr.status}`);
         }
-        setIsLoading(false);
       };
-      reader.onerror = () => {
-        setIsLoading(false);
-        setProgress(0);
-        toast({
-          title: "File Read Error",
-          description: "There was an issue reading your file.",
-          variant: "destructive",
-        });
+      
+      xhr.onerror = () => {
+        throw new Error("Network error during file upload.");
       };
-      reader.readAsDataURL(file);
+
+      xhr.send(file);
+
+    } catch (error) {
+      setIsLoading(false);
+      setProgress(0);
+      console.error("File upload process failed:", error);
+      toast({
+        title: "Upload Failed",
+        description: error instanceof Error ? error.message : "Could not upload file. Is your GCS bucket configured?",
+        variant: "destructive",
+      });
     }
   };
 
   const loadingMessage = isAnalyzing 
     ? "Analyzing video for key moments..." 
-    : `Reading your file... ${progress}%`;
+    : `Uploading your file... ${progress}%`;
   
   const showLoadingState = isLoading || isAnalyzing;
 

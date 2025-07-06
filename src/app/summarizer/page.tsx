@@ -2,6 +2,7 @@
 
 import { useRef, useState } from "react";
 import { clipSummarizer } from "@/ai/flows/clip-summarizer";
+import { generateUploadUrl } from "@/ai/flows/generate-upload-url";
 import { Header } from "@/components/layout/header";
 import { SidebarNav } from "@/components/layout/sidebar-nav";
 import { Button } from "@/components/ui/button";
@@ -17,11 +18,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2, Zap, FileText, Upload, FileVideo } from "lucide-react";
 
-const MAX_FILE_SIZE_MB = 100;
-const MAX_FILE_SIZE_BYTES = MAX_FILE_SIZE_MB * 1024 * 1024;
-
 export default function SummarizerPage() {
-  const [videoDataUri, setVideoDataUri] = useState<string | null>(null);
+  const [gcsUri, setGcsUri] = useState<string | null>(null);
   const [fileName, setFileName] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
@@ -30,56 +28,75 @@ export default function SummarizerPage() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
 
-  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
-    if (file) {
-      if (file.size > MAX_FILE_SIZE_BYTES) {
+    if (!file) return;
+
+    if (!file.type.startsWith("video/")) {
         toast({
-          title: "File Too Large",
-          description: `Please upload a file smaller than ${MAX_FILE_SIZE_MB}MB.`,
-          variant: "destructive",
+            title: "Invalid File Type",
+            description: "Please upload a video file.",
+            variant: "destructive",
         });
         return;
-      }
-      if (file.type.startsWith("video/")) {
-        const reader = new FileReader();
-        reader.onloadstart = () => {
-          setIsLoading(true);
-          setProgress(0);
-        };
-        reader.onprogress = (e) => {
-          if (e.lengthComputable) {
-            setProgress(Math.round((e.loaded / e.total) * 100));
-          }
-        };
-        reader.onload = (e) => {
-          setVideoDataUri(e.target?.result as string);
-          setFileName(file.name);
-          setSummary(null);
-          setIsLoading(false);
-        };
-        reader.onerror = () => {
-          setIsLoading(false);
-          setProgress(0);
-          toast({
-            title: "File Read Error",
-            description: "There was an issue reading your file.",
-            variant: "destructive",
-          });
-        };
-        reader.readAsDataURL(file);
-      } else {
-        toast({
-          title: "Invalid File Type",
-          description: "Please upload a video file.",
-          variant: "destructive",
+    }
+
+    setFileName(file.name);
+    setGcsUri(null);
+    setSummary(null);
+    setIsLoading(true);
+    setProgress(0);
+
+    try {
+        const { uploadUrl, gcsUri } = await generateUploadUrl({
+            fileName: file.name,
+            contentType: file.type,
         });
-      }
+
+        const xhr = new XMLHttpRequest();
+        xhr.open("PUT", uploadUrl, true);
+        xhr.setRequestHeader("Content-Type", file.type);
+
+        xhr.upload.onprogress = (e) => {
+            if (e.lengthComputable) {
+                setProgress(Math.round((e.loaded / e.total) * 100));
+            }
+        };
+
+        xhr.onload = () => {
+            if (xhr.status >= 200 && xhr.status < 300) {
+                setGcsUri(gcsUri);
+                toast({
+                    title: "Upload Complete",
+                    description: `${file.name} is ready for summarization.`,
+                });
+            } else {
+                throw new Error(`Upload failed with status: ${xhr.status}`);
+            }
+            setIsLoading(false);
+        };
+        
+        xhr.onerror = () => {
+            setIsLoading(false);
+            throw new Error("Network error during file upload.");
+        };
+
+        xhr.send(file);
+    } catch (error) {
+        setIsLoading(false);
+        setProgress(0);
+        setFileName(null);
+        console.error("File upload failed:", error);
+        toast({
+            title: "Upload Failed",
+            description: error instanceof Error ? error.message : "Could not upload file. Is your GCS bucket configured?",
+            variant: "destructive",
+        });
     }
   };
 
   const handleGenerateSummary = async () => {
-    if (!videoDataUri) {
+    if (!gcsUri) {
       toast({
         title: "No Video Uploaded",
         description: "Please upload a video to generate a summary.",
@@ -90,7 +107,7 @@ export default function SummarizerPage() {
     setIsGenerating(true);
     setSummary(null);
     try {
-      const result = await clipSummarizer({ videoDataUri });
+      const result = await clipSummarizer({ gcsUri });
       setSummary(result.summary);
       toast({
         title: "Summary Generated!",
@@ -146,7 +163,7 @@ export default function SummarizerPage() {
                     <Upload className="mr-2 h-4 w-4" />
                     {fileName ? "Change Video" : "Upload Video"}
                   </Button>
-                  {fileName && !isLoading && (
+                  {fileName && (
                     <div className="text-sm text-muted-foreground flex items-center gap-2 pt-2">
                       <FileVideo className="h-4 w-4" />
                       <span>{fileName}</span>
@@ -155,7 +172,7 @@ export default function SummarizerPage() {
                   {isLoading && (
                      <div className="space-y-2 pt-2">
                       <Progress value={progress} className="w-full" />
-                      <p className="text-xs text-muted-foreground text-center">Loading... {progress}%</p>
+                      <p className="text-xs text-muted-foreground text-center">Uploading... {progress}%</p>
                     </div>
                   )}
                 </div>
@@ -164,7 +181,7 @@ export default function SummarizerPage() {
                   className="w-full"
                   size="lg"
                   onClick={handleGenerateSummary}
-                  disabled={isLoading || isGenerating || !videoDataUri}
+                  disabled={isLoading || isGenerating || !gcsUri}
                 >
                   {isGenerating ? (
                     <Loader2 className="mr-2 h-5 w-5 animate-spin" />

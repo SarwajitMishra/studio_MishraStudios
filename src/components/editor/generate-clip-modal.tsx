@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/dialog";
 import { Progress } from "@/components/ui/progress";
 import { Loader2, Sparkles, Upload, X } from "lucide-react";
+import { generateUploadUrl } from "@/ai/flows/generate-upload-url";
 import { textToVideo } from "@/ai/flows/text-to-video";
 import { imageToVideo } from "@/ai/flows/image-to-video";
 import { promptToVideo } from "@/ai/flows/prompt-to-video";
@@ -25,9 +26,6 @@ interface GenerateClipModalProps {
   setMediaType: (type: MediaType | null) => void;
 }
 
-const MAX_FILE_SIZE_MB = 100;
-const MAX_FILE_SIZE_BYTES = MAX_FILE_SIZE_MB * 1024 * 1024;
-
 export function GenerateClipModal({
   setVideoUrl,
   setMediaType,
@@ -35,8 +33,7 @@ export function GenerateClipModal({
   const [prompt, setPrompt] = useState(
     "A majestic lion in the savanna at sunrise."
   );
-  const [fileDataUri, setFileDataUri] = useState<string | null>(null);
-  const [fileName, setFileName] = useState<string | null>(null);
+  const [file, setFile] = useState<File | null>(null);
   const [isReadingFile, setIsReadingFile] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
   const [progress, setProgress] = useState(0);
@@ -48,54 +45,21 @@ export function GenerateClipModal({
   };
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (file) {
-      if (file.size > MAX_FILE_SIZE_BYTES) {
-        toast({
-          title: "File Too Large",
-          description: `Please upload a file smaller than ${MAX_FILE_SIZE_MB}MB.`,
-          variant: "destructive",
-        });
-        return;
-      }
-      const reader = new FileReader();
-      reader.onloadstart = () => {
-        setIsReadingFile(true);
-        setProgress(0);
-      };
-      reader.onprogress = (e) => {
-        if (e.lengthComputable) {
-          setProgress(Math.round((e.loaded / e.total) * 100));
-        }
-      };
-      reader.onload = (e) => {
-        setFileDataUri(e.target?.result as string);
-        setFileName(file.name);
-        setIsReadingFile(false);
-      };
-      reader.onerror = () => {
-        setIsReadingFile(false);
-        setProgress(0);
-        toast({
-          title: "File Read Error",
-          description: "There was an issue reading your file.",
-          variant: "destructive",
-        });
-      };
-      reader.readAsDataURL(file);
+    const selectedFile = event.target.files?.[0];
+    if (selectedFile) {
+        setFile(selectedFile);
     }
   };
 
   const clearUpload = () => {
-    setFileDataUri(null);
-    setFileName(null);
+    setFile(null);
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
     }
   };
 
   const handleApplyPrompt = async () => {
-    if (!prompt && !fileDataUri) {
+    if (!prompt && !file) {
       toast({
         title: "Nothing to generate",
         description: "Please enter a prompt or upload a file.",
@@ -110,30 +74,59 @@ export function GenerateClipModal({
 
     try {
       let result: { videoDataUri?: string; videoClipDataUri?: string } = {};
-      let fileType = "";
-      if (fileDataUri) {
-        const mimeType = fileDataUri.split(":")[1].split(";")[0];
-        if (mimeType.startsWith("image/")) {
-          fileType = "image";
-        } else if (mimeType.startsWith("video/")) {
-          fileType = "video";
-        } else if (mimeType.startsWith("audio/")) {
-          fileType = "audio";
-        }
+      let fileType: MediaType | null = null;
+      let gcsUri: string | null = null;
+
+      if (file) {
+        const mimeType = file.type;
+        if (mimeType.startsWith("image/")) fileType = "image";
+        else if (mimeType.startsWith("video/")) fileType = "video";
+        else if (mimeType.startsWith("audio/")) fileType = "audio";
+
+        // Upload the file to GCS
+        setIsReadingFile(true);
+        setProgress(0);
+        const uploadData = await generateUploadUrl({
+          fileName: file.name,
+          contentType: file.type,
+        });
+        gcsUri = uploadData.gcsUri;
+        
+        const xhr = new XMLHttpRequest();
+        xhr.open("PUT", uploadData.uploadUrl, true);
+        xhr.setRequestHeader("Content-Type", file.type);
+        xhr.upload.onprogress = (e) => {
+            if (e.lengthComputable) {
+                setProgress(Math.round((e.loaded / e.total) * 100));
+            }
+        };
+
+        await new Promise((resolve, reject) => {
+            xhr.onload = () => {
+                if (xhr.status >= 200 && xhr.status < 300) {
+                    resolve(xhr.response);
+                } else {
+                    reject(new Error(`Upload failed: ${xhr.statusText}`));
+                }
+            };
+            xhr.onerror = () => reject(new Error("Network error during upload."));
+            xhr.send(file);
+        });
+        setIsReadingFile(false);
       }
 
       switch (fileType) {
         case "image":
-          result = await imageToVideo({ prompt, imageDataUri: fileDataUri! });
+          result = await imageToVideo({ prompt, gcsUri: gcsUri! });
           break;
         case "video":
-          result = await promptToVideo({ prompt, videoDataUri: fileDataUri! });
+          result = await promptToVideo({ prompt, gcsUri: gcsUri! });
           break;
         case "audio":
-          result = await audioToVideo({ prompt, audioDataUri: fileDataUri! });
+          result = await audioToVideo({ prompt, gcsUri: gcsUri! });
           break;
         default:
-          if (!fileDataUri) {
+          if (!file) {
             result = await textToVideo({ prompt });
           } else {
             throw new Error("Unsupported file type provided.");
@@ -145,8 +138,7 @@ export function GenerateClipModal({
 
       if (newVideoUrl) {
         setVideoUrl(newVideoUrl);
-        // All current AI flows generate images that represent video clips
-        setMediaType("image");
+        setMediaType("image"); // All current AI flows generate images that represent video clips
         toast({
           title: "Clip Generated!",
           description: "Your new clip is ready in the preview window.",
@@ -166,6 +158,7 @@ export function GenerateClipModal({
       });
     } finally {
       setIsGenerating(false);
+      setIsReadingFile(false);
     }
   };
   
@@ -196,13 +189,13 @@ export function GenerateClipModal({
           onChange={handleFileChange}
           className="hidden"
         />
-        {fileName ? (
+        {file ? (
           <div className="text-sm text-muted-foreground">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2 truncate">
                 <span>Attached:</span>
                 <span className="font-medium text-foreground truncate">
-                  {fileName}
+                  {file.name}
                 </span>
               </div>
               <Button
@@ -219,7 +212,7 @@ export function GenerateClipModal({
             {isReadingFile && (
               <div className="space-y-1 pt-2">
                 <Progress value={progress} className="w-full" />
-                <p className="text-xs text-muted-foreground text-center">Reading file... {progress}%</p>
+                <p className="text-xs text-muted-foreground text-center">Uploading file... {progress}%</p>
               </div>
             )}
           </div>
@@ -237,14 +230,14 @@ export function GenerateClipModal({
         <Button
           className="font-semibold text-base"
           onClick={handleApplyPrompt}
-          disabled={isLoading || (!prompt && !fileDataUri)}
+          disabled={isLoading || (!prompt && !file)}
         >
           {isGenerating ? (
             <Loader2 className="mr-2 h-5 w-5 animate-spin" />
           ) : (
             <Sparkles className="mr-2 h-5 w-5" />
           )}
-          <span>{isGenerating ? "Generating..." : "Generate"}</span>
+          <span>{isLoading ? "Uploading..." : isGenerating ? "Generating..." : "Generate"}</span>
         </Button>
       </DialogFooter>
     </DialogContent>

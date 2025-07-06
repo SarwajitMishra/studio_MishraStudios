@@ -12,10 +12,10 @@ import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
 
 const ImageToVideoInputSchema = z.object({
-  imageDataUri: z
+  gcsUri: z
     .string()
     .describe(
-      "An image file, as a data URI that must include a MIME type and use Base64 encoding. Expected format: 'data:<mimetype>;base64,<encoded_data>'."
+      "The GCS URI of the image file. Expected format: 'gs://<bucket-name>/<file-name>'"
     ),
   prompt: z.string().describe('A natural language prompt for creating the video clip.'),
 });
@@ -44,7 +44,7 @@ const imageToVideoFlow = ai.defineFlow(
     const {media} = await ai.generate({
       model: 'googleai/gemini-2.0-flash-preview-image-generation',
       prompt: [
-        {media: {url: input.imageDataUri}},
+        {media: {url: input.gcsUri}},
         {text: input.prompt},
       ],
       config: {

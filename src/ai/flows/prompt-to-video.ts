@@ -13,10 +13,10 @@ import {z} from 'genkit';
 import { textToVideo } from './text-to-video';
 
 const PromptToVideoInputSchema = z.object({
-  videoDataUri: z
+  gcsUri: z
     .string()
     .describe(
-      "A video file, as a data URI that must include a MIME type and use Base64 encoding. Expected format: 'data:<mimetype>;base64,<encoded_data>'."
+      "The GCS URI of the video file. Expected format: 'gs://<bucket-name>/<file-name>'"
     ),
   prompt: z.string().describe('A natural language prompt for creating the video clip.'),
 });
@@ -44,7 +44,7 @@ const promptToVideoFlow = ai.defineFlow(
     outputSchema: PromptToVideoOutputSchema,
   },
   async (input) => {
-    // Note: The videoDataUri is ignored in this basic implementation.
+    // Note: The gcsUri is ignored in this basic implementation.
     const result = await textToVideo({ prompt: input.prompt });
     return { videoClipDataUri: result.videoDataUri };
   }
