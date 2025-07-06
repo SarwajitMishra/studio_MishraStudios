@@ -1,7 +1,7 @@
 'use server';
 
 /**
- * @fileOverview An AI agent that creates a video clip based on a user prompt.
+ * @fileOverview An AI agent that creates a video clip based on a user prompt and an existing video.
  *
  * - promptToVideo - A function that handles the video clip creation process based on a prompt.
  * - PromptToVideoInput - The input type for the promptToVideo function.
@@ -10,6 +10,7 @@
 
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
+import { textToVideo } from './text-to-video';
 
 const PromptToVideoInputSchema = z.object({
   videoDataUri: z
@@ -34,26 +35,17 @@ export async function promptToVideo(input: PromptToVideoInput): Promise<PromptTo
   return promptToVideoFlow(input);
 }
 
-const prompt = ai.definePrompt({
-  name: 'promptToVideoPrompt',
-  input: {schema: PromptToVideoInputSchema},
-  output: {schema: PromptToVideoOutputSchema},
-  prompt: `You are an AI video editor. Your task is to create a video clip based on the user's prompt.
-
-User Prompt: {{{prompt}}}
-Video: {{media url=videoDataUri}}
-
-Create a video clip based on the prompt. Return the video clip as a data URI.`,
-});
-
+// For now, this flow will ignore the uploaded video and just use the text prompt to generate a new clip.
+// A more advanced implementation could use the video as context for generation.
 const promptToVideoFlow = ai.defineFlow(
   {
     name: 'promptToVideoFlow',
     inputSchema: PromptToVideoInputSchema,
     outputSchema: PromptToVideoOutputSchema,
   },
-  async input => {
-    const {output} = await prompt(input);
-    return output!;
+  async (input) => {
+    // Note: The videoDataUri is ignored in this basic implementation.
+    const result = await textToVideo({ prompt: input.prompt });
+    return { videoClipDataUri: result.videoDataUri };
   }
 );
