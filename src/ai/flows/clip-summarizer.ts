@@ -32,25 +32,20 @@ export async function clipSummarizer(
   return clipSummarizerFlow(input);
 }
 
-const prompt = ai.definePrompt({
-  name: 'clipSummarizerPrompt',
-  input: {schema: ClipSummarizerInputSchema},
-  output: {schema: ClipSummarizerOutputSchema},
-  prompt: `You are an expert video analyst. Analyze the provided video clip and generate a concise summary of its content.
-
-Video: {{media url=gcsUri mimeType=contentType}}
-
-Return only the summary text.`,
-});
-
 const clipSummarizerFlow = ai.defineFlow(
   {
     name: 'clipSummarizerFlow',
     inputSchema: ClipSummarizerInputSchema,
     outputSchema: ClipSummarizerOutputSchema,
   },
-  async input => {
-    const {output} = await prompt(input);
+  async (input) => {
+    const { output } = await ai.generate({
+      output: { schema: ClipSummarizerOutputSchema },
+      prompt: [
+        { text: `You are an expert video analyst. Analyze the provided video clip and generate a concise summary of its content. Return only the summary text.` },
+        { media: { url: input.gcsUri, mimeType: input.contentType } },
+      ],
+    });
     return output!;
   }
 );

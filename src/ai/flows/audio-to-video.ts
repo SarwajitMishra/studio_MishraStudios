@@ -19,6 +19,7 @@ const AudioToVideoInputSchema = z.object({
       "The GCS URI of the audio file. Expected format: 'gs://<bucket-name>/<file-name>'"
     ),
   prompt: z.string().describe('A natural language prompt for creating the video clip.'),
+  contentType: z.string().describe('The MIME type of the audio file.'),
 });
 export type AudioToVideoInput = z.infer<typeof AudioToVideoInputSchema>;
 
@@ -44,7 +45,7 @@ const audioToVideoFlow = ai.defineFlow(
     outputSchema: AudioToVideoOutputSchema,
   },
   async (input) => {
-    // Note: The gcsUri is ignored in this basic implementation.
+    // Note: The gcsUri is ignored in this basic implementation, but contentType is required for consistency.
     const result = await textToVideo({ prompt: input.prompt });
     return { videoDataUri: result.videoDataUri };
   }

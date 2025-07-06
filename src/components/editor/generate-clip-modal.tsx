@@ -137,10 +137,10 @@ export function GenerateClipModal({
           result = await imageToVideo({ prompt, gcsUri: gcsUri!, contentType: file!.type });
           break;
         case "video":
-          result = await promptToVideo({ prompt, gcsUri: gcsUri! });
+          result = await promptToVideo({ prompt, gcsUri: gcsUri!, contentType: file!.type });
           break;
         case "audio":
-          result = await audioToVideo({ prompt, gcsUri: gcsUri! });
+          result = await audioToVideo({ prompt, gcsUri: gcsUri!, contentType: file!.type });
           break;
         default:
           if (!file) {

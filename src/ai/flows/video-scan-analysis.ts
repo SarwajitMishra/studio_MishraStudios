@@ -40,23 +40,20 @@ export async function videoScanAnalysis(input: VideoScanAnalysisInput): Promise<
   return videoScanAnalysisFlow(input);
 }
 
-const prompt = ai.definePrompt({
-  name: 'videoScanAnalysisPrompt',
-  input: {schema: VideoScanAnalysisInputSchema},
-  output: {schema: VideoScanAnalysisOutputSchema},
-  prompt: `You are an AI video analysis expert. Your task is to analyze the uploaded video and suggest key moments or scenes that might be interesting for the user to include in their video edit. For each suggestion, provide a concise description and its start and end times in seconds. Focus on identifying highlights, memorable scenes, or moments that would capture viewer attention. Limit the list to no more than 5 suggestions.
-
-Video: {{media url=gcsUri mimeType=contentType}}`,
-});
-
 const videoScanAnalysisFlow = ai.defineFlow(
   {
     name: 'videoScanAnalysisFlow',
     inputSchema: VideoScanAnalysisInputSchema,
     outputSchema: VideoScanAnalysisOutputSchema,
   },
-  async input => {
-    const {output} = await prompt(input);
+  async (input) => {
+    const { output } = await ai.generate({
+      output: { schema: VideoScanAnalysisOutputSchema },
+      prompt: [
+        { text: `You are an AI video analysis expert. Your task is to analyze the uploaded video and suggest key moments or scenes that might be interesting for the user to include in their video edit. For each suggestion, provide a concise description and its start and end times in seconds. Focus on identifying highlights, memorable scenes, or moments that would capture viewer attention. Limit the list to no more than 5 suggestions.` },
+        { media: { url: input.gcsUri, mimeType: input.contentType } },
+      ],
+    });
     return output!;
   }
 );

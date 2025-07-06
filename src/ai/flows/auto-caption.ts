@@ -32,25 +32,20 @@ export async function autoCaption(
   return autoCaptionFlow(input);
 }
 
-const prompt = ai.definePrompt({
-  name: 'autoCaptionPrompt',
-  input: {schema: AutoCaptionInputSchema},
-  output: {schema: AutoCaptionOutputSchema},
-  prompt: `You are an expert audio transcriber. Your task is to generate captions for the provided video clip by transcribing its audio content.
-
-Video: {{media url=gcsUri mimeType=contentType}}
-
-Return only the transcribed text.`,
-});
-
 const autoCaptionFlow = ai.defineFlow(
   {
     name: 'autoCaptionFlow',
     inputSchema: AutoCaptionInputSchema,
     outputSchema: AutoCaptionOutputSchema,
   },
-  async input => {
-    const {output} = await prompt(input);
+  async (input) => {
+    const { output } = await ai.generate({
+      output: { schema: AutoCaptionOutputSchema },
+      prompt: [
+        { text: `You are an expert audio transcriber. Your task is to generate captions for the provided video clip by transcribing its audio content. Return only the transcribed text.` },
+        { media: { url: input.gcsUri, mimeType: input.contentType } },
+      ],
+    });
     return output!;
   }
 );

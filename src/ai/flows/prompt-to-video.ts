@@ -19,6 +19,7 @@ const PromptToVideoInputSchema = z.object({
       "The GCS URI of the video file. Expected format: 'gs://<bucket-name>/<file-name>'"
     ),
   prompt: z.string().describe('A natural language prompt for creating the video clip.'),
+  contentType: z.string().describe('The MIME type of the video file.'),
 });
 export type PromptToVideoInput = z.infer<typeof PromptToVideoInputSchema>;
 
@@ -44,7 +45,7 @@ const promptToVideoFlow = ai.defineFlow(
     outputSchema: PromptToVideoOutputSchema,
   },
   async (input) => {
-    // Note: The gcsUri is ignored in this basic implementation.
+    // Note: The gcsUri is ignored in this basic implementation, but contentType is required for consistency.
     const result = await textToVideo({ prompt: input.prompt });
     return { videoClipDataUri: result.videoDataUri };
   }
