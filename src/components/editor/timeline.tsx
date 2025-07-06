@@ -34,7 +34,16 @@ interface TimelineProps {
 export function Timeline({ videoClips, videoDuration }: TimelineProps) {
   const [activeTool, setActiveTool] = useState<Tool>("select");
 
-  const transformedVideoClips = (videoDuration && videoClips.length > 0)
+  const hasRealClips = videoClips.length > 0;
+  
+  // Default clips to show before a video is analyzed
+  const initialMockClips = [
+    { start: 5, end: 25, color: "bg-purple-500" },
+    { start: 30, end: 50, color: "bg-blue-500" },
+    { start: 65, end: 90, color: "bg-green-500" },
+  ];
+
+  const transformedVideoClips = (hasRealClips && videoDuration)
     ? videoClips.map((clip, index) => {
         const colors = ["bg-purple-500", "bg-blue-500", "bg-green-500", "bg-yellow-500", "bg-red-500"];
         return {
@@ -43,11 +52,8 @@ export function Timeline({ videoClips, videoDuration }: TimelineProps) {
           color: colors[index % colors.length],
         };
       })
-    : [
-        { start: 5, end: 25, color: "bg-purple-500" },
-        { start: 30, end: 50, color: "bg-blue-500" },
-        { start: 65, end: 90, color: "bg-green-500" },
-      ];
+    : hasRealClips ? [] : initialMockClips;
+
 
   const imageClips = [
     { start: 28, end: 42, color: "bg-pink-500" },
