@@ -104,13 +104,13 @@ export default function Home() {
           if (detectedMediaType === 'video') {
             try {
               setIsAnalyzing(true);
-              const contentType = file.type;
+              const mimeType = file.type;
 
               // DEBUG: Log what the client is about to send.
-              console.log('[DEBUG] Client calling videoScanAnalysis with:', { gcsUri, contentType });
+              console.log('[DEBUG] Client calling videoScanAnalysis with:', { gcsUri, mimeType });
               
-              if (!contentType) {
-                console.error('[DEBUG] CRITICAL: Client is attempting to call videoScanAnalysis with a null or empty contentType.');
+              if (!mimeType) {
+                console.error('[DEBUG] CRITICAL: Client is attempting to call videoScanAnalysis with a null or empty mimeType.');
                 toast({
                   title: "Analysis Failed",
                   description: "Cannot analyze video because its content type is unknown.",
@@ -120,7 +120,7 @@ export default function Home() {
                 return;
               }
 
-              const result = await videoScanAnalysis({ gcsUri, contentType });
+              const result = await videoScanAnalysis({ gcsUri, mimeType });
               
               setSuggestedClips(result.suggestedClips);
                toast({

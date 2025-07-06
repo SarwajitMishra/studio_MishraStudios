@@ -20,7 +20,7 @@ import { Loader2, Zap, FileText, Upload, FileVideo } from "lucide-react";
 
 export default function SummarizerPage() {
   const [gcsUri, setGcsUri] = useState<string | null>(null);
-  const [contentType, setContentType] = useState<string | null>(null);
+  const [mimeType, setMimeType] = useState<string | null>(null);
   const [fileName, setFileName] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
@@ -45,7 +45,7 @@ export default function SummarizerPage() {
     setFileName(file.name);
     setGcsUri(null);
     setSummary(null);
-    setContentType(file.type);
+    setMimeType(file.type);
     setIsLoading(true);
     setProgress(0);
 
@@ -113,7 +113,7 @@ export default function SummarizerPage() {
   };
 
   const handleGenerateSummary = async () => {
-    if (!gcsUri || !contentType) {
+    if (!gcsUri || !mimeType) {
       toast({
         title: "No Video Uploaded",
         description: "Please upload a video to generate a summary.",
@@ -124,7 +124,7 @@ export default function SummarizerPage() {
     setIsGenerating(true);
     setSummary(null);
     try {
-      const result = await clipSummarizer({ gcsUri, contentType });
+      const result = await clipSummarizer({ gcsUri, mimeType });
       setSummary(result.summary);
       toast({
         title: "Summary Generated!",

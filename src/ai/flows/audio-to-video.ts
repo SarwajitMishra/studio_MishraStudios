@@ -18,7 +18,7 @@ const AudioToVideoInputSchema = z.object({
       "The GCS URI of the audio file. Expected format: 'gs://<bucket-name>/<file-name>'"
     ),
   prompt: z.string().describe('A natural language prompt for creating the video clip.'),
-  contentType: z.string().describe('The MIME type of the audio file.'),
+  mimeType: z.string().describe('The MIME type of the audio file.'),
 });
 export type AudioToVideoInput = z.infer<typeof AudioToVideoInputSchema>;
 
@@ -48,7 +48,7 @@ const audioToVideoFlow = ai.defineFlow(
     const { media } = await ai.generate({
       model: 'googleai/gemini-2.0-flash-preview-image-generation',
       prompt: [
-        { media: { url: input.gcsUri, mimeType: input.contentType } },
+        { media: { url: input.gcsUri, mimeType: input.mimeType } },
         { text: `Based on the provided audio, generate a new image that visually represents the sound and incorporates the following prompt: ${input.prompt}` },
       ],
       config: {

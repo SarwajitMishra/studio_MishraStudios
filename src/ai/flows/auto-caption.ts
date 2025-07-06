@@ -17,7 +17,7 @@ const AutoCaptionInputSchema = z.object({
     .describe(
       "The GCS URI of the video clip. Expected format: 'gs://<bucket-name>/<file-name>'"
     ),
-  contentType: z.string().describe('The MIME type of the video file.'),
+  mimeType: z.string().describe('The MIME type of the video file.'),
 });
 export type AutoCaptionInput = z.infer<typeof AutoCaptionInputSchema>;
 
@@ -43,7 +43,7 @@ const autoCaptionFlow = ai.defineFlow(
       output: { schema: AutoCaptionOutputSchema },
       prompt: [
         { text: `You are an expert audio transcriber. Your task is to generate captions for the provided video clip by transcribing its audio content. Return only the transcribed text.` },
-        { media: { url: input.gcsUri, mimeType: input.contentType } },
+        { media: { url: input.gcsUri, mimeType: input.mimeType } },
       ],
     });
     return output!;

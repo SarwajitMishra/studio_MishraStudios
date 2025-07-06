@@ -17,7 +17,7 @@ const VideoScanAnalysisInputSchema = z.object({
     .describe(
       "The GCS URI of the video file to analyze. Expected format: 'gs://<bucket-name>/<file-name>'"
     ),
-  contentType: z.string().describe('The MIME type of the video file.'),
+  mimeType: z.string().describe('The MIME type of the video file.'),
 });
 export type VideoScanAnalysisInput = z.infer<typeof VideoScanAnalysisInputSchema>;
 
@@ -40,9 +40,9 @@ export async function videoScanAnalysis(input: VideoScanAnalysisInput): Promise<
   // DEBUG: Log the input as it arrives at the server-side function.
   console.log('[DEBUG] videoScanAnalysis entry:', JSON.stringify(input, null, 2));
 
-  if (!input.contentType) {
-    console.error('[DEBUG] CRITICAL: contentType is missing from input.');
-    throw new Error('A contentType is required but was not provided to the videoScanAnalysis flow.');
+  if (!input.mimeType) {
+    console.error('[DEBUG] CRITICAL: mimeType is missing from input.');
+    throw new Error('A mimeType is required but was not provided to the videoScanAnalysis flow.');
   }
 
   return videoScanAnalysisFlow(input);
@@ -60,7 +60,7 @@ const videoScanAnalysisFlow = ai.defineFlow(
 
     const promptPayload = [
         { text: `You are an AI video analysis expert. Your task is to analyze the uploaded video and suggest key moments or scenes that might be interesting for the user to include in their video edit. For each suggestion, provide a concise description and its start and end times in seconds. Focus on identifying highlights, memorable scenes, or moments that would capture viewer attention. Limit the list to no more than 5 suggestions.` },
-        { media: { url: input.gcsUri, mimeType: input.contentType } },
+        { media: { url: input.gcsUri, mimeType: input.mimeType } },
     ];
     
     // DEBUG: Log the exact object being sent to the AI model. This is the most important log.

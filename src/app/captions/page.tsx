@@ -20,7 +20,7 @@ import { Loader2, Zap, Captions, Upload, FileVideo } from "lucide-react";
 
 export default function CaptionsPage() {
   const [gcsUri, setGcsUri] = useState<string | null>(null);
-  const [contentType, setContentType] = useState<string | null>(null);
+  const [mimeType, setMimeType] = useState<string | null>(null);
   const [fileName, setFileName] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
@@ -45,7 +45,7 @@ export default function CaptionsPage() {
     setFileName(file.name);
     setGcsUri(null);
     setCaptions(null);
-    setContentType(file.type);
+    setMimeType(file.type);
     setIsLoading(true);
     setProgress(0);
 
@@ -113,7 +113,7 @@ export default function CaptionsPage() {
   };
 
   const handleGenerateCaptions = async () => {
-    if (!gcsUri || !contentType) {
+    if (!gcsUri || !mimeType) {
       toast({
         title: "No Video Uploaded",
         description: "Please upload a video to generate captions.",
@@ -124,7 +124,7 @@ export default function CaptionsPage() {
     setIsGenerating(true);
     setCaptions(null);
     try {
-      const result = await autoCaption({ gcsUri, contentType });
+      const result = await autoCaption({ gcsUri, mimeType });
       setCaptions(result.captions);
       toast({
         title: "Captions Generated!",
