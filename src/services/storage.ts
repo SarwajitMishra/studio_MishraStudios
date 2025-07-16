@@ -101,6 +101,6 @@ export async function downloadFileAsBase64(gcsUri: string): Promise<string> {
         return contents.toString('base64');
     } catch (error: any) {
         console.error(`GCS download failed for URI: ${gcsUri}. Error: ${error.message}`);
-        throw new Error(`Failed to download file from GCS: ${error.message}`);
+        throw error;
     }
 }
