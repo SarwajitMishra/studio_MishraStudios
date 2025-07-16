@@ -1,7 +1,5 @@
-import {genkit} from 'genkit';
-import {googleAI} from '@genkit-ai/googleai';
 
-export const ai = genkit({
-  plugins: [googleAI()],
-  model: 'googleai/gemini-2.0-flash',
-});
+import {genkit} from 'genkit';
+// Genkit is configured in genkit.config.ts
+
+export const ai = genkit();
