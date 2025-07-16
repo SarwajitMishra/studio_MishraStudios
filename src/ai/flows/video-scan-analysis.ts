@@ -22,7 +22,8 @@ const videoScanAnalysisFlow = ai.defineFlow(
     // Download video from GCS and convert to base64
     const videoBase64 = await downloadFileAsBase64(input.gcsUri);
 
-    const result = await ai.generate({
+    const { output } = await ai.generate({
+      model: 'googleai/gemini-1.5-flash-preview',
       prompt: [
         {
           text: `You are an AI video analysis expert. Analyze the uploaded video and suggest up to 5 key moments. Each suggestion should include:
@@ -53,6 +54,6 @@ Respond ONLY in this JSON format:
       },
     });
 
-    return result.output!;
+    return output!;
   }
 );
