@@ -14,16 +14,18 @@ const clientEmail = process.env.GCS_CLIENT_EMAIL;
 
 if (!projectId || !bucketName || !privateKey || !clientEmail) {
   let missingVars = [];
-  if (!projectId) missingVars.push("GOOGLE_CLOUD_PROJECT_ID");
-  if (!bucketName) missingVars.push("GCS_BUCKET_NAME");
+  if (!projectId) missingVars.push("GOOGLE_CLOUD_PROJECT_ID or NEXT_PUBLIC_FIREBASE_PROJECT_ID");
+  if (!bucketName) missingVars.push("GCS_BUCKET_NAME or NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET");
   if (!privateKey) missingVars.push("GCS_PRIVATE_KEY");
   if (!clientEmail) missingVars.push("GCS_CLIENT_EMAIL");
   
-  const errorMessage = `Storage service is not configured. Missing environment variables: ${missingVars.join(', ')}. Please check your .env.local file.`;
+  const errorMessage = `Storage service is not configured. Missing environment variables: ${missingVars.join(', ')}. Please check your .env.local file. Ensure GCS_PRIVATE_KEY is wrapped in double quotes.`;
   
+  // This check will run on the server when the module is loaded.
   if (process.env.NODE_ENV === 'development') {
     console.warn(errorMessage);
   } else {
+    // In production, we should fail hard if configuration is missing.
     throw new Error(errorMessage);
   }
 }
