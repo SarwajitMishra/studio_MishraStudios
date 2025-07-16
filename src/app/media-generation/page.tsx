@@ -42,12 +42,6 @@ const tools = [
     icon: <Mic className="h-8 w-8 text-primary" />,
     href: "/editor",
   },
-  {
-    title: "Edit Image Background",
-    description: "Replace the background of any image.",
-    icon: <Video className="h-8 w-8 text-primary" />,
-    href: "/edit-background",
-  },
 ];
 
 export default function MediaGenerationPage() {

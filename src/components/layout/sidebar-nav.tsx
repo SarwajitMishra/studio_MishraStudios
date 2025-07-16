@@ -100,19 +100,6 @@ export function SidebarNav() {
                 </SidebarMenuButton>
               </Link>
             </SidebarMenuItem>
-             <SidebarMenuItem>
-              <Link href="/edit-background" className="w-full">
-                <SidebarMenuButton
-                  tooltip="Edit Background"
-                  isActive={pathname === "/edit-background"}
-                >
-                  <ImageIcon />
-                  <span className="group-data-[state=collapsed]:hidden">
-                    Edit Background
-                  </span>
-                </SidebarMenuButton>
-              </Link>
-            </SidebarMenuItem>
             <SidebarMenuItem>
               <Link href="/media-generation" className="w-full">
                 <SidebarMenuButton
