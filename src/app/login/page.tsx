@@ -3,19 +3,11 @@
 
 import { Icons } from "@/components/icons";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Separator } from "@/components/ui/separator";
-import { Phone } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
 import Link from "next/link";
+import { AuthLayout } from "@/components/layout/auth-layout";
 
 function GoogleIcon(props: React.SVGProps<SVGSVGElement>) {
   return (
@@ -31,31 +23,72 @@ function GoogleIcon(props: React.SVGProps<SVGSVGElement>) {
   );
 }
 
+function GithubIcon(props: React.SVGProps<SVGSVGElement>) {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 24 24"
+      fill="currentColor"
+      {...props}
+    >
+      <path
+        fillRule="evenodd"
+        d="M12 2C6.477 2 2 6.477 2 12c0 4.418 2.865 8.168 6.839 9.49.5.092.682-.217.682-.482 0-.237-.009-.868-.014-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.031-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.378.203 2.398.1 2.651.64.7 1.03 1.595 1.03 2.688 0 3.848-2.338 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.001 10.001 0 0022 12c0-5.523-4.477-10-10-10z"
+        clipRule="evenodd"
+      />
+    </svg>
+  );
+}
+
 export default function LoginPage() {
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background p-4">
-      <Card className="w-full max-w-md">
-        <CardHeader className="text-center">
-          <div className="mb-4 flex justify-center">
-            <Icons.Logo className="h-10 w-10 text-primary" />
+    <AuthLayout
+      imageUrl="https://placehold.co/1200x800.png"
+      imageHint="video editor interface"
+    >
+      <div className="flex flex-col justify-center items-start h-full">
+        <div className="w-full max-w-md mx-auto">
+          <div className="mb-8">
+            <Link href="/" className="flex items-center gap-2 text-primary">
+              <Icons.Logo className="h-8 w-8" />
+              <span className="text-xl font-bold text-foreground">
+                Mishra Studios
+              </span>
+            </Link>
+            <p className="text-muted-foreground mt-2">
+              Welcome back! Let’s pick up where you left off.
+            </p>
           </div>
-          <CardTitle>Welcome Back</CardTitle>
-          <CardDescription>
-            Sign in to continue to Mishra Studios
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="email">Email</Label>
-            <Input id="email" type="email" placeholder="user@example.com" />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="password">Password</Label>
-            <Input id="password" type="password" placeholder="••••••••" />
-          </div>
-          <Button className="w-full">Sign In</Button>
-          <div className="relative">
-            <Separator className="my-4" />
+
+          <form className="space-y-4">
+            <div className="grid w-full items-center gap-1.5">
+              <Label htmlFor="email">Email</Label>
+              <Input type="email" id="email" placeholder="user@example.com" />
+            </div>
+            <div className="grid w-full items-center gap-1.5">
+              <Label htmlFor="password">Password</Label>
+              <Input type="password" id="password" placeholder="••••••••" />
+            </div>
+
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-2">
+                <Checkbox id="remember-me" />
+                <Label htmlFor="remember-me" className="text-sm font-normal">
+                  Remember me
+                </Label>
+              </div>
+              <Link
+                href="#"
+                className="text-sm font-medium text-primary hover:underline"
+              >
+                Forgot password?
+              </Link>
+            </div>
+
+            <Button className="w-full" size="lg">Sign In</Button>
+          </form>
+
+          <div className="relative my-6">
             <div className="absolute inset-0 flex items-center">
               <span className="w-full border-t" />
             </div>
@@ -65,19 +98,19 @@ export default function LoginPage() {
               </span>
             </div>
           </div>
-          <div className="grid grid-cols-2 gap-2">
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <Button variant="outline">
-              <GoogleIcon className="mr-2 h-4 w-4" />
+              <GoogleIcon className="mr-2 h-5 w-5" />
               Google
             </Button>
             <Button variant="outline">
-              <Phone className="mr-2 h-4 w-4" />
-              Phone
+              <GithubIcon className="mr-2 h-5 w-5" />
+              GitHub
             </Button>
           </div>
-        </CardContent>
-        <CardFooter className="justify-center text-sm">
-          <p className="text-muted-foreground">
+
+          <p className="mt-8 text-center text-sm text-muted-foreground">
             Don't have an account?{" "}
             <Link
               href="/signup"
@@ -86,8 +119,8 @@ export default function LoginPage() {
               Sign up
             </Link>
           </p>
-        </CardFooter>
-      </Card>
-    </div>
+        </div>
+      </div>
+    </AuthLayout>
   );
 }
