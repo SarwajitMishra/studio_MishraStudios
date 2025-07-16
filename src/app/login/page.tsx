@@ -1,6 +1,7 @@
 
 "use client";
 
+import { useState } from 'react';
 import { Icons } from "@/components/icons";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -9,6 +10,9 @@ import { Checkbox } from "@/components/ui/checkbox";
 import Link from "next/link";
 import { AuthLayout } from "@/components/layout/auth-layout";
 import { useRouter } from 'next/navigation';
+import { useAuth } from '@/hooks/use-auth';
+import { useToast } from "@/hooks/use-toast";
+import { Loader2 } from "lucide-react";
 
 function GoogleIcon(props: React.SVGProps<SVGSVGElement>) {
   return (
@@ -43,13 +47,61 @@ function GithubIcon(props: React.SVGProps<SVGSVGElement>) {
 
 export default function LoginPage() {
   const router = useRouter();
+  const { signIn, signInWithGoogle, signInWithGitHub } = useAuth();
+  const { toast } = useToast();
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
 
-  const handleSignIn = (e: React.FormEvent) => {
+  const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
-    // In a real app, you would have authentication logic here.
-    // For now, we'll just redirect to the dashboard.
-    router.push('/dashboard');
+    setIsLoading(true);
+    try {
+      await signIn(email, password);
+      router.push('/dashboard');
+    } catch (error: any) {
+      toast({
+        title: "Sign In Failed",
+        description: error.message,
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
+  
+  const handleGoogleSignIn = async () => {
+    setIsLoading(true);
+    try {
+      await signInWithGoogle();
+      router.push('/dashboard');
+    } catch (error: any) {
+       toast({
+        title: "Sign In Failed",
+        description: error.message,
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+  
+  const handleGitHubSignIn = async () => {
+    setIsLoading(true);
+    try {
+      await signInWithGitHub();
+      router.push('/dashboard');
+    } catch (error: any) {
+       toast({
+        title: "Sign In Failed",
+        description: error.message,
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
 
   return (
     <AuthLayout
@@ -73,16 +125,16 @@ export default function LoginPage() {
           <form className="space-y-4" onSubmit={handleSignIn}>
             <div className="grid w-full items-center gap-1.5">
               <Label htmlFor="email">Email</Label>
-              <Input type="email" id="email" placeholder="user@example.com" required />
+              <Input type="email" id="email" placeholder="user@example.com" required value={email} onChange={(e) => setEmail(e.target.value)} disabled={isLoading} />
             </div>
             <div className="grid w-full items-center gap-1.5">
               <Label htmlFor="password">Password</Label>
-              <Input type="password" id="password" placeholder="••••••••" required />
+              <Input type="password" id="password" placeholder="••••••••" required value={password} onChange={(e) => setPassword(e.target.value)} disabled={isLoading}/>
             </div>
 
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-2">
-                <Checkbox id="remember-me" />
+                <Checkbox id="remember-me" disabled={isLoading}/>
                 <Label htmlFor="remember-me" className="text-sm font-normal">
                   Remember me
                 </Label>
@@ -95,7 +147,10 @@ export default function LoginPage() {
               </Link>
             </div>
 
-            <Button className="w-full" size="lg" type="submit">Sign In</Button>
+            <Button className="w-full" size="lg" type="submit" disabled={isLoading}>
+              {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              Sign In
+            </Button>
           </form>
 
           <div className="relative my-6">
@@ -110,11 +165,11 @@ export default function LoginPage() {
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <Button variant="outline" onClick={() => router.push('/dashboard')}>
+            <Button variant="outline" onClick={handleGoogleSignIn} disabled={isLoading}>
               <GoogleIcon className="mr-2 h-5 w-5" />
               Google
             </Button>
-            <Button variant="outline" onClick={() => router.push('/dashboard')}>
+            <Button variant="outline" onClick={handleGitHubSignIn} disabled={isLoading}>
               <GithubIcon className="mr-2 h-5 w-5" />
               GitHub
             </Button>

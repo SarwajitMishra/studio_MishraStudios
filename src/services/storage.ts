@@ -1,3 +1,4 @@
+
 'use server';
 
 import {config} from 'dotenv';
@@ -5,12 +6,12 @@ config(); // Ensure environment variables are loaded
 
 import { Storage } from '@google-cloud/storage';
 
-const projectId = process.env.GOOGLE_CLOUD_PROJECT_ID;
-const bucketName = process.env.GCS_BUCKET_NAME;
+const projectId = process.env.GOOGLE_CLOUD_PROJECT_ID || process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID;
+const bucketName = process.env.GCS_BUCKET_NAME || process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET;
 
 if (!projectId || !bucketName) {
   if (process.env.NODE_ENV === 'development') {
-    console.warn("GOOGLE_CLOUD_PROJECT_ID or GCS_BUCKET_NAME environment variable is not set. File uploads will fail. Please set them in your .env file.");
+    console.warn("Project ID or GCS Bucket Name environment variable is not set. File uploads will fail. Please set them in your .env.local file.");
   }
 }
 
@@ -26,7 +27,7 @@ const storage = new Storage({ projectId });
  */
 export async function generateV4UploadSignedUrl(fileName: string, mimeType: string): Promise<{ uploadUrl: string; gcsUri: string }> {
   if (!bucketName) {
-    throw new Error("GCS_BUCKET_NAME environment variable is not set.");
+    throw new Error("GCS_BUCKET_NAME or NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET environment variable is not set.");
   }
 
   // Defensively remove any "gs://" prefix from the bucket name to prevent duplication.

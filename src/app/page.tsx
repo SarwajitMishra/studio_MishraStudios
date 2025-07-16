@@ -1,23 +1,26 @@
 
 "use client";
 
+import { useAuth } from '@/hooks/use-auth';
 import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 
-// This is a temporary redirect to the dashboard.
-// In a real app, you'd check for authentication here.
 export default function HomeRedirect() {
+  const { user, loading } = useAuth();
   const router = useRouter();
-  const [redirecting, setRedirecting] = useState(true);
 
   useEffect(() => {
-    // Simulate an auth check, then redirect.
-    const timer = setTimeout(() => {
-        router.push('/dashboard');
-    }, 1500);
+    // Don't redirect until loading is finished
+    if (loading) {
+      return;
+    }
 
-    return () => clearTimeout(timer);
-  }, [router]);
+    if (user) {
+      router.push('/dashboard');
+    } else {
+      router.push('/login');
+    }
+  }, [user, loading, router]);
 
   return (
     <div className="flex h-screen w-full items-center justify-center bg-background text-foreground">

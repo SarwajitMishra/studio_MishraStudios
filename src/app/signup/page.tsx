@@ -1,6 +1,7 @@
 
 "use client";
 
+import { useState } from "react";
 import { Icons } from "@/components/icons";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -8,11 +9,14 @@ import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import Link from "next/link";
 import { AuthLayout } from "@/components/layout/auth-layout";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogClose } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { TermsContent } from "@/components/legal/terms-content";
 import { PrivacyPolicyContent } from "@/components/legal/privacy-policy-content";
 import { useRouter } from "next/navigation";
+import { useAuth } from "@/hooks/use-auth";
+import { useToast } from "@/hooks/use-toast";
+import { Loader2 } from "lucide-react";
 
 function GoogleIcon(props: React.SVGProps<SVGSVGElement>) {
   return (
@@ -47,12 +51,79 @@ function GithubIcon(props: React.SVGProps<SVGSVGElement>) {
 
 export default function SignupPage() {
   const router = useRouter();
+  const { signUp, signInWithGoogle, signInWithGitHub } = useAuth();
+  const { toast } = useToast();
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const [agreedToTerms, setAgreedToTerms] = useState(false);
 
-  const handleSignUp = (e: React.FormEvent) => {
+  const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
-    // In a real app, you would have registration logic here.
-    // For now, we'll just redirect to the dashboard.
-    router.push('/dashboard');
+    if (password !== confirmPassword) {
+      toast({
+        title: "Passwords do not match",
+        description: "Please check your passwords and try again.",
+        variant: "destructive",
+      });
+      return;
+    }
+    if (!agreedToTerms) {
+        toast({
+          title: "Terms and Conditions",
+          description: "You must agree to the Terms of Use and Privacy Policy.",
+          variant: "destructive",
+        });
+        return;
+    }
+
+    setIsLoading(true);
+    try {
+      await signUp(email, password, name);
+      router.push('/dashboard');
+    } catch (error: any) {
+      toast({
+        title: "Sign Up Failed",
+        description: error.message,
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleGoogleSignUp = async () => {
+    setIsLoading(true);
+    try {
+      await signInWithGoogle();
+      router.push('/dashboard');
+    } catch (error: any) {
+       toast({
+        title: "Sign Up Failed",
+        description: error.message,
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleGitHubSignUp = async () => {
+    setIsLoading(true);
+    try {
+      await signInWithGitHub();
+      router.push('/dashboard');
+    } catch (error: any) {
+       toast({
+        title: "Sign Up Failed",
+        description: error.message,
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -77,23 +148,23 @@ export default function SignupPage() {
           <form className="space-y-4" onSubmit={handleSignUp}>
             <div className="grid w-full items-center gap-1.5">
               <Label htmlFor="name">Full Name</Label>
-              <Input type="text" id="name" placeholder="John Doe" required/>
+              <Input type="text" id="name" placeholder="John Doe" required value={name} onChange={e => setName(e.target.value)} disabled={isLoading} />
             </div>
             <div className="grid w-full items-center gap-1.5">
               <Label htmlFor="email">Email</Label>
-              <Input type="email" id="email" placeholder="user@example.com" required/>
+              <Input type="email" id="email" placeholder="user@example.com" required value={email} onChange={e => setEmail(e.target.value)} disabled={isLoading}/>
             </div>
             <div className="grid w-full items-center gap-1.5">
               <Label htmlFor="password">Password</Label>
-              <Input type="password" id="password" placeholder="••••••••" required/>
+              <Input type="password" id="password" placeholder="••••••••" required value={password} onChange={e => setPassword(e.target.value)} disabled={isLoading}/>
             </div>
              <div className="grid w-full items-center gap-1.5">
               <Label htmlFor="confirm-password">Confirm Password</Label>
-              <Input type="password" id="confirm-password" placeholder="••••••••" required/>
+              <Input type="password" id="confirm-password" placeholder="••••••••" required value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} disabled={isLoading}/>
             </div>
 
             <div className="flex items-start space-x-2 pt-2">
-              <Checkbox id="terms" required/>
+              <Checkbox id="terms" required checked={agreedToTerms} onCheckedChange={(checked) => setAgreedToTerms(Boolean(checked))} disabled={isLoading}/>
               <div className="grid gap-1.5 leading-none">
                 <label
                   htmlFor="terms"
@@ -141,7 +212,10 @@ export default function SignupPage() {
             </div>
             
             <div className="pt-2">
-                <Button className="w-full" size="lg" type="submit">Create your free account</Button>
+                <Button className="w-full" size="lg" type="submit" disabled={isLoading}>
+                  {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                  Create your free account
+                </Button>
                 <p className="text-center text-xs text-muted-foreground mt-2">
                     No credit card required. Start editing in seconds.
                 </p>
@@ -160,11 +234,11 @@ export default function SignupPage() {
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <Button variant="outline" onClick={() => router.push('/dashboard')}>
+            <Button variant="outline" onClick={handleGoogleSignUp} disabled={isLoading}>
               <GoogleIcon className="mr-2 h-5 w-5" />
               Google
             </Button>
-            <Button variant="outline" onClick={() => router.push('/dashboard')}>
+            <Button variant="outline" onClick={handleGitHubSignUp} disabled={isLoading}>
               <GithubIcon className="mr-2 h-5 w-5" />
               GitHub
             </Button>

@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState } from "react";
+import { useAuth } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -12,18 +12,52 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { LogOut, User, Settings } from "lucide-react";
+import { LogOut, User, Settings, UserPlus, LogIn } from "lucide-react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { Skeleton } from "../ui/skeleton";
 
 export function UserAuthButton() {
-  const router = useRouter();
+  const { user, loading, signOut } = useAuth();
 
-  const handleLogout = () => {
-    // In a real app, this would clear tokens and call an auth provider's sign-out method.
-    // For now, we'll just navigate back to the login page.
-    router.push('/login');
-  };
+  if (loading) {
+    return (
+      <div className="flex items-center gap-3 p-2">
+        <Skeleton className="h-9 w-9 rounded-full" />
+        <div className="group-data-[state=collapsed]:hidden flex flex-col gap-1 w-32">
+          <Skeleton className="h-4 w-2/3" />
+          <Skeleton className="h-3 w-full" />
+        </div>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return (
+      <div className="flex flex-col gap-2 group-data-[state=collapsed]:hidden">
+        <Link href="/login" passHref>
+          <Button className="w-full">
+            <LogIn className="mr-2 h-4 w-4" />
+            Sign In
+          </Button>
+        </Link>
+        <Link href="/signup" passHref>
+          <Button variant="outline" className="w-full">
+            <UserPlus className="mr-2 h-4 w-4" />
+            Sign Up
+          </Button>
+        </Link>
+      </div>
+    );
+  }
+
+  const getInitials = (name?: string | null) => {
+    if (!name) return "U";
+    const names = name.split(' ');
+    if (names.length > 1) {
+      return names[0][0] + names[names.length - 1][0];
+    }
+    return name[0];
+  }
 
   return (
     <DropdownMenu>
@@ -34,18 +68,18 @@ export function UserAuthButton() {
         >
           <Avatar className="h-9 w-9">
             <AvatarImage
-              src="https://placehold.co/40x40.png"
-              alt="User Avatar"
+              src={user.photoURL ?? ''}
+              alt={user.displayName ?? "User Avatar"}
               data-ai-hint="person portrait"
             />
-            <AvatarFallback>U</AvatarFallback>
+            <AvatarFallback>{getInitials(user.displayName)}</AvatarFallback>
           </Avatar>
-          <div className="group-data-[state=collapsed]:hidden text-left">
-            <p className="text-sm font-medium leading-none">
-              User
+          <div className="group-data-[state=collapsed]:hidden text-left truncate">
+            <p className="text-sm font-medium leading-none truncate">
+              {user.displayName || "User"}
             </p>
-            <p className="text-xs leading-none text-muted-foreground">
-              user@example.com
+            <p className="text-xs leading-none text-muted-foreground truncate">
+              {user.email || "No email provided"}
             </p>
           </div>
         </Button>
@@ -53,9 +87,9 @@ export function UserAuthButton() {
       <DropdownMenuContent className="w-56" align="end" forceMount>
         <DropdownMenuLabel className="font-normal">
           <div className="flex flex-col space-y-1">
-            <p className="text-sm font-medium leading-none">User</p>
+            <p className="text-sm font-medium leading-none">{user.displayName || "User"}</p>
             <p className="text-xs leading-none text-muted-foreground">
-              user@example.com
+              {user.email}
             </p>
           </div>
         </DropdownMenuLabel>
@@ -69,7 +103,7 @@ export function UserAuthButton() {
           <span>Settings</span>
         </DropdownMenuItem>
         <DropdownMenuSeparator />
-        <DropdownMenuItem onClick={handleLogout}>
+        <DropdownMenuItem onClick={signOut}>
           <LogOut className="mr-2 h-4 w-4" />
           <span>Log out</span>
         </DropdownMenuItem>
