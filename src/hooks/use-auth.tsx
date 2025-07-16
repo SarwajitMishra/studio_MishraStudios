@@ -9,7 +9,6 @@ import {
   ReactNode 
 } from 'react';
 import { 
-  getAuth, 
   onAuthStateChanged, 
   User, 
   createUserWithEmailAndPassword, 
@@ -17,10 +16,12 @@ import {
   signOut as firebaseSignOut, 
   updateProfile,
   signInWithPopup,
-  GoogleAuthProvider,
-  GithubAuthProvider
+  setPersistence,
+  browserLocalPersistence,
+  getAuth,
+  type Auth,
 } from 'firebase/auth';
-import { auth, googleProvider, githubProvider } from '@/lib/firebase/client';
+import { app, googleProvider, githubProvider } from '@/lib/firebase/client';
 import { useRouter } from 'next/navigation';
 
 interface AuthContextType {
@@ -38,41 +39,52 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
+  const [auth, setAuth] = useState<Auth | null>(null);
   const router = useRouter();
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
-      setUser(user);
-      setLoading(false);
-    });
+    const authInstance = getAuth(app);
+    setAuth(authInstance);
 
-    return () => unsubscribe();
+    setPersistence(authInstance, browserLocalPersistence).then(() => {
+        const unsubscribe = onAuthStateChanged(authInstance, (user) => {
+          setUser(user);
+          setLoading(false);
+        });
+        return () => unsubscribe();
+    }).catch((error) => {
+        console.error("Firebase persistence error:", error);
+        setLoading(false);
+    });
   }, []);
 
   const signUp = async (email: string, password: string, displayName: string) => {
+    if (!auth) return;
     const userCredential = await createUserWithEmailAndPassword(auth, email, password);
     if (userCredential.user) {
       await updateProfile(userCredential.user, { displayName });
-      // Manually update the user state because onAuthStateChanged might be slow
       setUser({ ...userCredential.user, displayName });
     }
   };
 
   const signIn = async (email: string, password: string) => {
+    if (!auth) return;
     await signInWithEmailAndPassword(auth, email, password);
   };
 
   const signOut = async () => {
+    if (!auth) return;
     await firebaseSignOut(auth);
-    // Redirect to login after sign out
     router.push('/login'); 
   };
   
   const signInWithGoogle = async () => {
+    if (!auth) return;
     await signInWithPopup(auth, googleProvider);
   };
   
   const signInWithGitHub = async () => {
+    if (!auth) return;
     await signInWithPopup(auth, githubProvider);
   };
 

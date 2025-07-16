@@ -1,6 +1,6 @@
 
-import { initializeApp, getApps, getApp } from 'firebase/app';
-import { getAuth, setPersistence, browserLocalPersistence, GoogleAuthProvider, GithubAuthProvider } from 'firebase/auth';
+import { initializeApp, getApps, getApp, type FirebaseApp } from 'firebase/app';
+import { GoogleAuthProvider, GithubAuthProvider, type Auth } from 'firebase/auth';
 
 const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
@@ -12,16 +12,14 @@ const firebaseConfig = {
 };
 
 // Initialize Firebase
-const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
-const auth = getAuth(app);
-
-// Set persistence to local to keep user signed in
-// This check ensures it only runs on the client side
-if (typeof window !== 'undefined') {
-  setPersistence(auth, browserLocalPersistence);
+let app: FirebaseApp;
+if (!getApps().length) {
+    app = initializeApp(firebaseConfig);
+} else {
+    app = getApp();
 }
 
 const googleProvider = new GoogleAuthProvider();
 const githubProvider = new GithubAuthProvider();
 
-export { app, auth, googleProvider, githubProvider };
+export { app, googleProvider, githubProvider };
