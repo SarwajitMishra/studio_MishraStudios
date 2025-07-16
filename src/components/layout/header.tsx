@@ -1,5 +1,7 @@
+
 "use client";
 
+import { useState } from "react";
 import { Icons } from "@/components/icons";
 import { Button } from "@/components/ui/button";
 import {
@@ -41,9 +43,12 @@ import {
   Twitter,
   Youtube,
   Lock,
+  Gem,
 } from "lucide-react";
 
 export function Header() {
+  const [isPremium, setIsPremium] = useState(false);
+
   return (
     <header className="sticky top-0 z-30 flex h-16 shrink-0 items-center gap-4 border-b bg-background/80 px-4 backdrop-blur-sm md:px-6">
       <div className="flex items-center gap-2">
@@ -100,17 +105,22 @@ export function Header() {
                     <Label htmlFor="resolution" className="text-right">
                       Resolution
                     </Label>
-                    <Select defaultValue="1080p">
+                    <Select defaultValue="720p" disabled={!isPremium}>
                       <SelectTrigger className="col-span-3">
                         <SelectValue placeholder="Select resolution" />
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="720p">720p (HD)</SelectItem>
-                        <SelectItem value="1080p">1080p (Full HD)</SelectItem>
-                        <SelectItem value="4k" disabled>
+                        <SelectItem value="1080p" disabled={!isPremium}>
                           <div className="flex items-center gap-2">
-                            <Lock className="h-3 w-3" />
-                            <span>4K (Ultra HD) - Premium</span>
+                            {!isPremium && <Lock className="h-3 w-3" />}
+                            <span>1080p (Full HD)</span>
+                          </div>
+                        </SelectItem>
+                        <SelectItem value="4k" disabled={!isPremium}>
+                          <div className="flex items-center gap-2">
+                            {!isPremium && <Lock className="h-3 w-3" />}
+                            <span>4K (Ultra HD)</span>
                           </div>
                         </SelectItem>
                       </SelectContent>
@@ -135,11 +145,32 @@ export function Header() {
                       Watermark
                     </Label>
                     <div className="col-span-3">
-                      <Switch id="watermark" defaultChecked />
+                      <Switch
+                        id="watermark"
+                        checked={isPremium ? undefined : true}
+                        disabled={!isPremium}
+                      />
                     </div>
                   </div>
                 </div>
-                <DialogFooter>
+
+                <div className="flex items-center space-x-2 rounded-md border p-3">
+                  <Gem className="h-4 w-4 text-primary" />
+                  <div className="flex-1 space-y-1">
+                    <p className="text-sm font-medium leading-none">
+                      Simulate Premium
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      Toggle to see premium export options.
+                    </p>
+                  </div>
+                  <Switch
+                    checked={isPremium}
+                    onCheckedChange={setIsPremium}
+                  />
+                </div>
+
+                <DialogFooter className="pt-4">
                   <Button type="submit" className="w-full">
                     Start Export
                   </Button>
