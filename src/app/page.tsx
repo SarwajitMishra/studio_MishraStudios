@@ -63,38 +63,74 @@ function LandingPage() {
               <p className="mt-2 text-muted-foreground">From ideas to final cut, let AI be your creative partner.</p>
             </div>
             <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
-              <Card>
-                <CardHeader className="flex flex-row items-center gap-4">
-                  <div className="bg-primary/10 p-3 rounded-full">
+              <Card className="overflow-hidden">
+                 <CardContent className="p-0">
+                  <Image
+                    src="https://placehold.co/600x400.png"
+                    data-ai-hint="data analysis abstract"
+                    alt="AI Clip Suggestions"
+                    width={600}
+                    height={400}
+                    className="w-full h-48 object-cover"
+                  />
+                </CardContent>
+                <CardHeader className="flex flex-row items-start gap-4 p-4">
+                  <div className="bg-primary/10 p-3 rounded-full mt-1">
                     <Sparkles className="h-6 w-6 text-primary" />
                   </div>
-                  <CardTitle>AI Clip Suggestions</CardTitle>
+                  <div>
+                    <CardTitle className="text-lg">AI Clip Suggestions</CardTitle>
+                    <p className="text-sm text-muted-foreground mt-1">
+                      Upload your long-form video and our AI will instantly find and suggest the most engaging moments, ready to be turned into shorts.
+                    </p>
+                  </div>
                 </CardHeader>
-                <CardContent>
-                  Upload your long-form video and our AI will instantly find and suggest the most engaging moments, ready to be turned into shorts.
-                </CardContent>
               </Card>
-              <Card>
-                <CardHeader className="flex flex-row items-center gap-4">
-                  <div className="bg-primary/10 p-3 rounded-full">
+              <Card className="overflow-hidden">
+                <CardContent className="p-0">
+                  <Image
+                    src="https://placehold.co/600x400.png"
+                    data-ai-hint="text document creation"
+                    alt="Text-to-Video Generation"
+                    width={600}
+                    height={400}
+                    className="w-full h-48 object-cover"
+                  />
+                </CardContent>
+                <CardHeader className="flex flex-row items-start gap-4 p-4">
+                  <div className="bg-primary/10 p-3 rounded-full mt-1">
                     <Type className="h-6 w-6 text-primary" />
                   </div>
-                  <CardTitle>Text-to-Video Generation</CardTitle>
+                   <div>
+                    <CardTitle className="text-lg">Text-to-Video Generation</CardTitle>
+                    <p className="text-sm text-muted-foreground mt-1">
+                      Have a script or an idea? Describe it in a prompt and watch as our AI generates a video clip to match your vision.
+                    </p>
+                  </div>
                 </CardHeader>
-                <CardContent>
-                  Have a script or an idea? Describe it in a prompt and watch as our AI generates a video clip to match your vision.
-                </CardContent>
               </Card>
-              <Card>
-                <CardHeader className="flex flex-row items-center gap-4">
-                  <div className="bg-primary/10 p-3 rounded-full">
+              <Card className="overflow-hidden">
+                <CardContent className="p-0">
+                  <Image
+                    src="https://placehold.co/600x400.png"
+                    data-ai-hint="video editing timeline"
+                    alt="Prompt-Based Editing"
+                    width={600}
+                    height={400}
+                    className="w-full h-48 object-cover"
+                  />
+                </CardContent>
+                <CardHeader className="flex flex-row items-start gap-4 p-4">
+                  <div className="bg-primary/10 p-3 rounded-full mt-1">
                     <Film className="h-6 w-6 text-primary" />
                   </div>
-                  <CardTitle>Prompt-Based Editing</CardTitle>
+                  <div>
+                    <CardTitle className="text-lg">Prompt-Based Editing</CardTitle>
+                    <p className="text-sm text-muted-foreground mt-1">
+                      Simply tell the AI what you want. "Make this clip black and white and add cinematic music." Done. It's that easy.
+                    </p>
+                  </div>
                 </CardHeader>
-                <CardContent>
-                  Simply tell the AI what you want. "Make this clip black and white and add cinematic music." Done. It's that easy.
-                </CardContent>
               </Card>
             </div>
           </div>
