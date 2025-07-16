@@ -1,9 +1,6 @@
 
 'use server';
 
-import {config} from 'dotenv';
-config(); // Ensure environment variables are loaded
-
 import { Storage } from '@google-cloud/storage';
 
 const projectId = process.env.GOOGLE_CLOUD_PROJECT_ID || process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID;
