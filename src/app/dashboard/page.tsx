@@ -2,53 +2,14 @@ import { Header } from "@/components/layout/header";
 import { SidebarNav } from "@/components/layout/sidebar-nav";
 import { Button } from "@/components/ui/button";
 import {
-  Card,
-  CardContent,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import {
   Sidebar,
   SidebarInset,
   SidebarProvider,
 } from "@/components/ui/sidebar";
-import { MoreVertical, Plus, Zap } from "lucide-react";
-import Image from "next/image";
+import { Film, Plus, Zap } from "lucide-react";
 
 export default function Dashboard() {
-  const projects = [
-    {
-      title: "Summer Vacation Vlog",
-      date: "Last edited 2 days ago",
-      thumbnail: "https://placehold.co/600x400.png",
-      aiHint: "travel vlog"
-    },
-    {
-      title: "Birthday Party Recap",
-      date: "Last edited 1 week ago",
-      thumbnail: "https://placehold.co/600x400.png",
-      aiHint: "birthday party"
-    },
-    {
-      title: "Product Hunt Launch",
-      date: "Last edited 3 weeks ago",
-      thumbnail: "https://placehold.co/600x400.png",
-      aiHint: "product launch"
-    },
-    {
-      title: "Untitled Project",
-      date: "Last edited 1 month ago",
-      thumbnail: "https://placehold.co/600x400.png",
-      aiHint: "abstract art"
-    },
-  ];
+  const projects: any[] = []; // No projects by default
 
   return (
     <SidebarProvider>
@@ -68,43 +29,21 @@ export default function Dashboard() {
                 New Project
               </Button>
             </div>
-            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-              {projects.map((project, index) => (
-                <Card key={index} className="overflow-hidden shadow-md">
-                  <CardHeader className="p-0">
-                    <Image
-                      src={project.thumbnail}
-                      alt={project.title}
-                      data-ai-hint={project.aiHint}
-                      width={600}
-                      height={400}
-                      className="aspect-video object-cover"
-                    />
-                  </CardHeader>
-                  <CardContent className="p-4">
-                    <CardTitle className="text-lg mb-1">{project.title}</CardTitle>
-                    <p className="text-sm text-muted-foreground">
-                      {project.date}
-                    </p>
-                  </CardContent>
-                  <CardFooter className="p-4 pt-0 flex justify-between">
-                    <Button>Open</Button>
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="icon">
-                          <MoreVertical className="h-4 w-4" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuItem>Rename</DropdownMenuItem>
-                        <DropdownMenuItem>Duplicate</DropdownMenuItem>
-                        <DropdownMenuContent>Delete</DropdownMenuContent>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </CardFooter>
-                </Card>
-              ))}
-            </div>
+            {projects.length === 0 ? (
+              <div className="flex flex-col items-center justify-center h-full border-2 border-dashed rounded-lg bg-muted/50">
+                <div className="text-center">
+                  <Film className="mx-auto h-12 w-12 text-muted-foreground" />
+                  <h3 className="mt-4 text-lg font-semibold">No Projects Yet</h3>
+                  <p className="mt-1 text-sm text-muted-foreground">
+                    Click "New Project" to get started.
+                  </p>
+                </div>
+              </div>
+            ) : (
+              <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                {/* Project cards would be mapped here */}
+              </div>
+            )}
           </main>
         </div>
         <Button

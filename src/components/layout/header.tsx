@@ -68,9 +68,6 @@ export function Header() {
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="center" className="w-64">
-            <DropdownMenuItem>Project 1</DropdownMenuItem>
-            <DropdownMenuItem>Project 2</DropdownMenuItem>
-            <DropdownMenuSeparator />
             <DropdownMenuItem>
               <Plus className="mr-2 h-4 w-4" />
               <span>Create new project</span>
