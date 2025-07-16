@@ -8,20 +8,27 @@ import fs from 'fs';
 const projectId = process.env.GOOGLE_CLOUD_PROJECT_ID || process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID;
 const bucketName = process.env.GCS_BUCKET_NAME || process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET;
 
-// Determine the path to the service account key
 const serviceAccountKeyPath = path.resolve('./service-account.json');
 
 let storage: Storage;
 
-// Check if the key file exists and initialize Storage with it
 if (fs.existsSync(serviceAccountKeyPath)) {
-  storage = new Storage({ 
-    projectId,
-    keyFilename: serviceAccountKeyPath 
-  });
+  try {
+    const keyFileContent = fs.readFileSync(serviceAccountKeyPath, 'utf-8');
+    const key = JSON.parse(keyFileContent);
+    if (!key.project_id || !key.client_email || !key.private_key) {
+      throw new Error('service-account.json is malformed or missing required fields.');
+    }
+    storage = new Storage({
+      projectId,
+      keyFilename: serviceAccountKeyPath,
+    });
+  } catch (error: any) {
+    console.error(`Failed to initialize Storage with key file: ${error.message}`);
+    throw new Error(`Could not initialize cloud storage. Please ensure service-account.json is valid. Error: ${error.message}`);
+  }
 } else {
-  // Fallback for environments where the key is not present (e.g., deployed with Application Default Credentials)
-  console.warn(`Service account key not found at ${serviceAccountKeyPath}. Attempting to initialize storage without explicit credentials.`);
+  console.warn(`Service account key not found at ${serviceAccountKeyPath}. Falling back to default credentials. This may fail in local development without 'gcloud auth application-default login'.`);
   storage = new Storage({ projectId });
 }
 
@@ -42,14 +49,8 @@ export async function generateV4UploadSignedUrl(fileName: string, mimeType: stri
   if (!bucketName) {
     throw new Error("GCS_BUCKET_NAME or NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET environment variable is not set.");
   }
-  
-  if (!fs.existsSync(serviceAccountKeyPath) && process.env.NODE_ENV === 'development') {
-    console.warn("service-account.json is not set. URL signing will likely fail. Please provide a service account key file path in your .env.local file.");
-  }
 
-  // Defensively remove any "gs://" prefix from the bucket name to prevent duplication.
   const cleanBucketName = bucketName.replace(/^gs:\/\//, '');
-
   const bucket = storage.bucket(cleanBucketName);
   const file = bucket.file(fileName);
 
@@ -65,11 +66,14 @@ export async function generateV4UploadSignedUrl(fileName: string, mimeType: stri
     const gcsUri = `gs://${cleanBucketName}/${fileName}`;
     return { uploadUrl, gcsUri };
   } catch (error: any) {
-    console.error("Error generating signed URL:", error.message);
-    if (error.message.includes('client_email')) {
-        throw new Error("Failed to sign URL. Make sure your service-account.json key is correctly configured and has 'Service Account Token Creator' role.");
+    console.error(`Error generating signed URL: ${error.code} - ${error.message}`);
+    if (error.code === 403 || error.message.includes('permission')) {
+        throw new Error("Permission denied. The service account is missing the 'Service Account Token Creator' role in your Google Cloud IAM settings. Please add this role to the service account.");
     }
-    throw error;
+    if (error.message.includes('client_email')) {
+        throw new Error("Authentication failed. Please ensure your 'service-account.json' file is correctly configured and has the 'Service Account Token Creator' role.");
+    }
+    throw new Error(`Failed to generate upload URL: ${error.message}`);
   }
 }
 
@@ -83,7 +87,6 @@ export async function downloadFileAsBase64(gcsUri: string): Promise<string> {
         throw new Error('GCS URI is empty or undefined.');
     }
 
-    // A more robust regex to capture bucket and file path
     const match = gcsUri.match(/^gs:\/\/([a-zA-Z0-9._-]+)\/(.+)$/);
     if (!match) {
         throw new Error(`Invalid GCS URI format. Expected 'gs://<bucket-name>/<file-name>'. Received: '${gcsUri}'`);

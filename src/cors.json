@@ -1,3 +1,4 @@
+
 [
   {
     "origin": [
@@ -5,7 +6,8 @@
       "http://localhost:9002",
       "https://*.firebaseapp.com",
       "https://*.web.app",
-      "https://6000-firebase-studio-1751723903767.cluster-sumfw3zmzzhzkx4mpvz3ogth4y.cloudworkstations.dev"
+      "https://*.cloudworkstations.dev",
+      "https://storage.googleapis.com"
     ],
     "method": ["PUT", "GET", "HEAD"],
     "responseHeader": [
