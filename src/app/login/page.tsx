@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import Link from "next/link";
 import { AuthLayout } from "@/components/layout/auth-layout";
+import { useRouter } from 'next/navigation';
 
 function GoogleIcon(props: React.SVGProps<SVGSVGElement>) {
   return (
@@ -41,6 +42,15 @@ function GithubIcon(props: React.SVGProps<SVGSVGElement>) {
 }
 
 export default function LoginPage() {
+  const router = useRouter();
+
+  const handleSignIn = (e: React.FormEvent) => {
+    e.preventDefault();
+    // In a real app, you would have authentication logic here.
+    // For now, we'll just redirect to the dashboard.
+    router.push('/dashboard');
+  };
+
   return (
     <AuthLayout
       imageUrl="https://placehold.co/1200x800.png"
@@ -60,14 +70,14 @@ export default function LoginPage() {
             </p>
           </div>
 
-          <form className="space-y-4">
+          <form className="space-y-4" onSubmit={handleSignIn}>
             <div className="grid w-full items-center gap-1.5">
               <Label htmlFor="email">Email</Label>
-              <Input type="email" id="email" placeholder="user@example.com" />
+              <Input type="email" id="email" placeholder="user@example.com" required />
             </div>
             <div className="grid w-full items-center gap-1.5">
               <Label htmlFor="password">Password</Label>
-              <Input type="password" id="password" placeholder="••••••••" />
+              <Input type="password" id="password" placeholder="••••••••" required />
             </div>
 
             <div className="flex items-center justify-between">
@@ -85,7 +95,7 @@ export default function LoginPage() {
               </Link>
             </div>
 
-            <Button className="w-full" size="lg">Sign In</Button>
+            <Button className="w-full" size="lg" type="submit">Sign In</Button>
           </form>
 
           <div className="relative my-6">
@@ -100,11 +110,11 @@ export default function LoginPage() {
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <Button variant="outline">
+            <Button variant="outline" onClick={() => router.push('/dashboard')}>
               <GoogleIcon className="mr-2 h-5 w-5" />
               Google
             </Button>
-            <Button variant="outline">
+            <Button variant="outline" onClick={() => router.push('/dashboard')}>
               <GithubIcon className="mr-2 h-5 w-5" />
               GitHub
             </Button>
