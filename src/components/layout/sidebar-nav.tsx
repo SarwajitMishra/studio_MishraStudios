@@ -114,12 +114,17 @@ export function SidebarNav() {
               </Link>
             </SidebarMenuItem>
             <SidebarMenuItem>
-              <SidebarMenuButton tooltip="Media Generation">
-                <Sparkles />
-                <span className="group-data-[state=collapsed]:hidden">
-                  Media Generation
-                </span>
-              </SidebarMenuButton>
+              <Link href="/media-generation" className="w-full">
+                <SidebarMenuButton
+                  tooltip="Media Generation"
+                  isActive={pathname === "/media-generation"}
+                >
+                  <Sparkles />
+                  <span className="group-data-[state=collapsed]:hidden">
+                    Media Generation
+                  </span>
+                </SidebarMenuButton>
+              </Link>
             </SidebarMenuItem>
           </SidebarMenu>
         </SidebarGroup>
