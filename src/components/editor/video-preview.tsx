@@ -1,3 +1,4 @@
+
 import { useRef, useEffect } from "react";
 import Image from "next/image";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
@@ -153,14 +154,13 @@ export function VideoPreview({
               <div className="w-full h-full flex flex-col items-center justify-center text-center gap-4 p-8 bg-card text-card-foreground rounded-lg">
                 <div className="relative">
                   <Film className="w-16 h-16 sm:w-24 sm:h-24 text-primary" />
-                  <Sparkles className="absolute -top-2 -right-2 w-6 h-6 sm:w-8 sm:h-8 text-primary" />
-                  <Sparkles className="absolute bottom-12 -left-2 w-4 h-4 sm:w-6 sm:h-6 text-primary opacity-70" />
+                  <Sparkles className="absolute -top-2 -right-2 w-6 h-6 sm:w-8 sm:h-8 text-accent" />
                 </div>
                 <h2 className="text-2xl sm:text-3xl font-bold mt-2">
-                  Start Creating with Mishra Studios
+                  Let's Create a Video
                 </h2>
                 <p className="text-base sm:text-lg text-muted-foreground max-w-md">
-                  Upload a video or use AI to begin your masterpiece.
+                  Upload your video file to get started or use an AI generation tool from the sidebar.
                 </p>
                 <Button
                   size="lg"
@@ -169,7 +169,7 @@ export function VideoPreview({
                   disabled={isLoading}
                 >
                   <Upload className="mr-2 h-5 w-5" />
-                  Upload a Video
+                  Upload Your Video
                 </Button>
               </div>
             )}
