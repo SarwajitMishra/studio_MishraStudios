@@ -1,3 +1,4 @@
+
 "use client";
 
 import Link from "next/link";
@@ -22,6 +23,7 @@ import {
   BookText,
   FileText,
   Image as ImageIcon,
+  PenSquare,
 } from "lucide-react";
 import { UserAuthButton } from "../auth/user-auth-button";
 import { DarkModeToggle } from "../dark-mode-toggle";
@@ -44,9 +46,9 @@ export function SidebarNav() {
           <SidebarGroupLabel>My Media</SidebarGroupLabel>
           <SidebarMenu>
             <SidebarMenuItem>
-              <Link href="/" className="w-full">
-                <SidebarMenuButton tooltip="Editor" isActive={pathname === "/"}>
-                  <Library />
+              <Link href="/editor" className="w-full">
+                <SidebarMenuButton tooltip="Editor" isActive={pathname === "/editor"}>
+                  <PenSquare />
                   <span className="group-data-[state=collapsed]:hidden">
                     Editor
                   </span>

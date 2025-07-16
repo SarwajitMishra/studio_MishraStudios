@@ -16,7 +16,7 @@ export default function HomeRedirect() {
     }
 
     if (user) {
-      router.push('/dashboard');
+      router.push('/editor');
     } else {
       router.push('/login');
     }
