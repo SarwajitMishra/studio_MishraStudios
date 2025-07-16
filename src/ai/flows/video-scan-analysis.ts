@@ -1,3 +1,4 @@
+
 'use server';
 
 import { downloadFileAsBase64 } from '@/services/storage';
@@ -23,7 +24,7 @@ const videoScanAnalysisFlow = ai.defineFlow(
     const videoBase64 = await downloadFileAsBase64(input.gcsUri);
 
     const { output } = await ai.generate({
-      model: 'googleai/gemini-1.5-flash-preview',
+      model: 'gemini-1.5-flash-preview',
       prompt: [
         {
           text: `You are an AI video analysis expert. Analyze the uploaded video and suggest up to 5 key moments. Each suggestion should include:
