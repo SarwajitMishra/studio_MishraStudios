@@ -20,21 +20,6 @@ export const AudioToVideoOutputSchema = z.object({
 });
 export type AudioToVideoOutput = z.infer<typeof AudioToVideoOutputSchema>;
 
-// From auto-caption.ts
-export const AutoCaptionInputSchema = z.object({
-  gcsUri: z
-    .string()
-    .describe(
-      "The GCS URI of the video clip. Expected format: 'gs://<bucket-name>/<file-name>'"
-    ),
-  mimeType: z.string().describe('The MIME type of the video file.'),
-});
-export type AutoCaptionInput = z.infer<typeof AutoCaptionInputSchema>;
-export const AutoCaptionOutputSchema = z.object({
-  captions: z.string().describe('The generated captions for the video clip.'),
-});
-export type AutoCaptionOutput = z.infer<typeof AutoCaptionOutputSchema>;
-
 // From auto-suggest-prompt.ts
 export const AutoSuggestPromptInputSchema = z.object({
   userInput: z.string().describe('The user input to generate prompts for.'),
@@ -233,5 +218,33 @@ export const VideoScanAnalysisOutputSchema = z.object({
 });
 export type VideoScanAnalysisOutput = z.infer<typeof VideoScanAnalysisOutputSchema>;
 
+// From edit-image-background.ts
+export const EditImageBackgroundInputSchema = z.object({
+  gcsUri: z
+    .string()
+    .describe(
+      "The GCS URI of the image file. Expected format: 'gs://<bucket-name>/<file-name>'"
+    ),
+  prompt: z.string().describe('A natural language prompt describing the new background.'),
+  mimeType: z.string().describe("The MIME type of the image file."),
+});
+export type EditImageBackgroundInput = z.infer<typeof EditImageBackgroundInputSchema>;
+
+export const EditImageBackgroundOutputSchema = z.object({
+  imageDataUri: z
+    .string()
+    .describe(
+      'An image data URI with the edited background.'
+    ),
+});
+export type EditImageBackgroundOutput = z.infer<typeof EditImageBackgroundOutputSchema>;
+
+
 // From page.tsx
 export type MediaType = "image" | "video" | "audio";
+
+// From auto-caption.ts (Empty placeholder)
+export const AutoCaptionInputSchema = z.object({});
+export type AutoCaptionInput = z.infer<typeof AutoCaptionInputSchema>;
+export const AutoCaptionOutputSchema = z.object({});
+export type AutoCaptionOutput = z.infer<typeof AutoCaptionOutputSchema>;
