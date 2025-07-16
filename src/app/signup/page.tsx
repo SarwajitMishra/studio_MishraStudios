@@ -8,6 +8,10 @@ import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import Link from "next/link";
 import { AuthLayout } from "@/components/layout/auth-layout";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogClose } from "@/components/ui/dialog";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { TermsContent } from "@/components/legal/terms-content";
+import { PrivacyPolicyContent } from "@/components/legal/privacy-policy-content";
 
 function GoogleIcon(props: React.SVGProps<SVGSVGElement>) {
   return (
@@ -82,13 +86,41 @@ export default function SignupPage() {
                   className="text-sm font-normal text-muted-foreground"
                 >
                   I agree to Mishra Studios’{" "}
-                  <Link href="/terms" className="font-bold text-primary hover:underline" target="_blank">
-                    Terms of Use
-                  </Link>{" "}
+                  <Dialog>
+                    <DialogTrigger asChild>
+                      <span className="font-bold text-primary hover:underline cursor-pointer">
+                        Terms of Use
+                      </span>
+                    </DialogTrigger>
+                    <DialogContent className="sm:max-w-3xl h-[80vh]">
+                      <DialogHeader>
+                        <DialogTitle>Terms of Use</DialogTitle>
+                      </DialogHeader>
+                      <ScrollArea className="h-full">
+                        <div className="pr-4">
+                            <TermsContent />
+                        </div>
+                      </ScrollArea>
+                    </DialogContent>
+                  </Dialog>{" "}
                   and{" "}
-                  <Link href="/privacy" className="font-bold text-primary hover:underline" target="_blank">
-                    Privacy Policy
-                  </Link>
+                   <Dialog>
+                    <DialogTrigger asChild>
+                      <span className="font-bold text-primary hover:underline cursor-pointer">
+                        Privacy Policy
+                      </span>
+                    </DialogTrigger>
+                    <DialogContent className="sm:max-w-3xl h-[80vh]">
+                      <DialogHeader>
+                        <DialogTitle>Privacy Policy</DialogTitle>
+                      </DialogHeader>
+                      <ScrollArea className="h-full">
+                         <div className="pr-4">
+                           <PrivacyPolicyContent />
+                         </div>
+                      </ScrollArea>
+                    </DialogContent>
+                  </Dialog>
                   .
                 </label>
               </div>
