@@ -105,11 +105,15 @@ export function Header() {
                     <Label htmlFor="resolution" className="text-right">
                       Resolution
                     </Label>
-                    <Select defaultValue="720p" disabled={!isPremium}>
+                    <Select defaultValue="720p">
                       <SelectTrigger className="col-span-3">
                         <SelectValue placeholder="Select resolution" />
                       </SelectTrigger>
                       <SelectContent>
+                        <SelectItem value="144p">144p</SelectItem>
+                        <SelectItem value="240p">240p</SelectItem>
+                        <SelectItem value="360p">360p</SelectItem>
+                        <SelectItem value="480p">480p</SelectItem>
                         <SelectItem value="720p">720p (HD)</SelectItem>
                         <SelectItem value="1080p" disabled={!isPremium}>
                           <div className="flex items-center gap-2">
@@ -117,10 +121,16 @@ export function Header() {
                             <span>1080p (Full HD)</span>
                           </div>
                         </SelectItem>
-                        <SelectItem value="4k" disabled={!isPremium}>
+                         <SelectItem value="1440p" disabled={!isPremium}>
                           <div className="flex items-center gap-2">
                             {!isPremium && <Lock className="h-3 w-3" />}
-                            <span>4K (Ultra HD)</span>
+                            <span>1440p (2K)</span>
+                          </div>
+                        </SelectItem>
+                        <SelectItem value="2160p" disabled={!isPremium}>
+                          <div className="flex items-center gap-2">
+                            {!isPremium && <Lock className="h-3 w-3" />}
+                            <span>2160p (4K)</span>
                           </div>
                         </SelectItem>
                       </SelectContent>
