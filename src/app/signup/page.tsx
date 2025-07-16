@@ -82,11 +82,11 @@ export default function SignupPage() {
                   className="text-sm font-normal text-muted-foreground"
                 >
                   I agree to Mishra Studios’{" "}
-                  <Link href="#" className="font-bold text-primary hover:underline">
+                  <Link href="/terms" className="font-bold text-primary hover:underline" target="_blank">
                     Terms of Use
                   </Link>{" "}
                   and{" "}
-                  <Link href="#" className="font-bold text-primary hover:underline">
+                  <Link href="/privacy" className="font-bold text-primary hover:underline" target="_blank">
                     Privacy Policy
                   </Link>
                   .
