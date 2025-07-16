@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState } from "react";
@@ -12,10 +13,12 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { LogOut, User, Settings } from "lucide-react";
+import Link from "next/link";
 
 export function UserAuthButton() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
+  // In a real app, these would be replaced with actual auth logic (e.g., from Firebase)
   const handleLogin = () => setIsLoggedIn(true);
   const handleLogout = () => setIsLoggedIn(false);
 
@@ -35,11 +38,11 @@ export function UserAuthButton() {
               />
               <AvatarFallback>N</AvatarFallback>
             </Avatar>
-            <div className="group-data-[state=collapsed]:hidden">
-              <p className="text-sm font-medium leading-none text-left">
+            <div className="group-data-[state=collapsed]:hidden text-left">
+              <p className="text-sm font-medium leading-none">
                 User
               </p>
-              <p className="text-xs leading-none text-muted-foreground text-left">
+              <p className="text-xs leading-none text-muted-foreground">
                 user@example.com
               </p>
             </div>
@@ -73,12 +76,16 @@ export function UserAuthButton() {
     );
   }
 
+  // To see the logged in state, you can click the "Sign In" button which will
+  // just toggle the state for now.
   return (
     <div className="flex flex-col gap-2 group-data-[state=collapsed]:hidden">
-      <Button variant="outline" size="sm" onClick={handleLogin}>
-        Sign In
+      <Button variant="outline" size="sm" asChild>
+        <Link href="/login">Sign In</Link>
       </Button>
-      <Button size="sm">Sign Up</Button>
+      <Button size="sm" asChild>
+        <Link href="/signup">Sign Up</Link>
+      </Button>
     </div>
   );
 }
