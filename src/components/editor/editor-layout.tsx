@@ -77,6 +77,7 @@ export function EditorLayout() {
           setLoadingMessage("Analyzing video...");
 
           try {
+            console.log(`[EditorLayout] Calling videoScanAnalysis with gcsUri: ${gcsUri}, mimeType: ${file.type}`);
             const { suggestedClips } = await videoScanAnalysis({
               gcsUri,
               mimeType: file.type,
