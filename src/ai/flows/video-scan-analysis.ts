@@ -7,7 +7,6 @@ import {
   VideoScanAnalysisInputSchema,
   VideoScanAnalysisOutput,
   VideoScanAnalysisOutputSchema,
-  SuggestedClip,
 } from '@/lib/types';
 
 /**
@@ -48,7 +47,7 @@ const videoScanAnalysisFlow = ai.defineFlow(
 
     // Step 2: Pass transcript to an LLM to get clip suggestions.
     const { output } = await ai.generate({
-      model: 'gemini-pro',
+      model: 'googleai/gemini-1.5-flash-latest',
       prompt: [
         {
           text: `You are a video content editor.
