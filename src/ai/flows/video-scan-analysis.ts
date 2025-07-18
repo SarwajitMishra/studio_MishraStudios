@@ -3,12 +3,11 @@
 
 import { downloadFileAsBase64 } from '@/services/storage';
 import { ai } from '@/ai/genkit';
-import { runFlow } from 'genkit/flow';
 import { VideoScanAnalysisInput, VideoScanAnalysisInputSchema, VideoScanAnalysisOutput, VideoScanAnalysisOutputSchema } from '@/lib/types';
 
 export async function videoScanAnalysis(input: VideoScanAnalysisInput): Promise<VideoScanAnalysisOutput> {
-  // Use runFlow to ensure proper Genkit instrumentation
-  return runFlow(videoScanAnalysisFlow, input);
+  // Use ai.run to ensure proper Genkit instrumentation
+  return await ai.run(videoScanAnalysisFlow, input);
 }
 
 const videoScanAnalysisFlow = ai.defineFlow(
