@@ -16,14 +16,14 @@ export async function videoScanAnalysis(input: VideoScanAnalysisInput): Promise<
       inputSchema: VideoScanAnalysisInputSchema,
       outputSchema: VideoScanAnalysisOutputSchema,
     },
-    async (input) => {
-      console.log('[videoScanAnalysisFlow] Flow started with input:', input);
-      if (!input?.gcsUri || !input?.mimeType?.startsWith('video/')) {
-        throw new Error(`Invalid input: ${JSON.stringify(input)}`);
+    async (flowInput) => {
+      console.log('[videoScanAnalysisFlow] Flow started with input:', flowInput);
+      if (!flowInput?.gcsUri || !flowInput?.mimeType?.startsWith('video/')) {
+        throw new Error(`Invalid input: ${JSON.stringify(flowInput)}`);
       }
 
       // Download video from GCS and convert to base64
-      const videoBase64 = await downloadFileAsBase64(input.gcsUri);
+      const videoBase64 = await downloadFileAsBase64(flowInput.gcsUri);
 
       const { text } = await ai.generate({
         model: 'googleai/gemini-pro-vision',
@@ -47,8 +47,8 @@ Respond ONLY with valid JSON in the format:
           },
           {
             media: {
-              url: `data:${input.mimeType};base64,${videoBase64}`,
-              contentType: input.mimeType,
+              url: `data:${flowInput.mimeType};base64,${videoBase64}`,
+              contentType: flowInput.mimeType,
             },
           },
         ],
