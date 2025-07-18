@@ -28,7 +28,7 @@ const audioToVideoFlow = ai.defineFlow(
 
     // Simulate analysis with a text model
     await ai.generate({
-      model: googleAI.model('gemini-1.5-flash'),
+      model: googleAI.model('gemini-pro'),
       prompt: `A user has provided an audio file and the following prompt to generate a video: "${input.prompt}". Acknowledge this request.`,
     });
     

@@ -21,10 +21,10 @@ const textToVideoFlow = ai.defineFlow(
     inputSchema: TextToVideoInputSchema,
     outputSchema: TextToVideoOutputSchema,
   },
-  async input => {
-    // Simulate generation with a text model
+  async (input) => {
+    // Simulate analysis with a text model
     await ai.generate({
-        model: googleAI.model('gemini-1.5-flash'),
+        model: googleAI.model('gemini-pro'),
         prompt: `A user wants to generate a video with the following prompt: "${input.prompt}". Acknowledge this request.`
     });
 

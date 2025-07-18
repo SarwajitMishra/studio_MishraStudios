@@ -43,7 +43,7 @@ async function runTranscriptOnlyFlow(
 
   // Step 2: Pass transcript to an LLM to get clip suggestions.
   const { output } = await ai.generate({
-    model: googleAI.model('gemini-1.5-flash'),
+    model: googleAI.model('gemini-pro'),
     prompt: `You are a video content editor.
 Here is a transcript of the video with timestamps:
 ${simulatedTranscript}

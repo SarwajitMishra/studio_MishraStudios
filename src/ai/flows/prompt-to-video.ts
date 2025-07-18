@@ -28,7 +28,7 @@ const promptToVideoFlow = ai.defineFlow(
 
     // Simulate analysis with a text model
     await ai.generate({
-        model: googleAI.model('gemini-1.5-flash'),
+        model: googleAI.model('gemini-pro'),
         prompt: `A user has provided a video and the following prompt to generate a new video clip: "${input.prompt}". Acknowledge this request.`,
     });
 
