@@ -34,7 +34,7 @@ const videoScanAnalysisFlow = ai.defineFlow(
     console.log('[videoScanAnalysisFlow] Simulated transcript generated.');
 
     // Step 2: Pass transcript to an LLM to get clip suggestions.
-    const { text } = await ai.generate({
+    const { text } = await ai.generateText({
       model: 'googleai/gemini-pro',
       prompt: `You are a video content editor.
 Here is a transcript of the video with timestamps:
@@ -61,10 +61,12 @@ Respond ONLY with valid JSON in the format:
     console.log('[videoScanAnalysisFlow] Raw model output:', text);
     let suggestedClips: SuggestedClip[] = [];
     try {
-      const parsed = JSON.parse(text);
+      // The model sometimes wraps the JSON in ```json ... ```, so we need to strip that.
+      const cleanedText = text.replace(/^```json\s*|```\s*$/g, '');
+      const parsed = JSON.parse(cleanedText);
       suggestedClips = parsed.suggestedClips || [];
     } catch (e) {
-      console.error('[videoScanAnalysisFlow] Failed to parse model output:', e);
+      console.error('[videoScanAnalysisFlow] Failed to parse model output:', e, 'Raw text:', text);
       // Return an empty array on failure
       suggestedClips = [];
     }
