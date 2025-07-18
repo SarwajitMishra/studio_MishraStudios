@@ -3,12 +3,25 @@
 
 import { ai } from '@/ai/genkit';
 import {
-  SuggestedClip,
   VideoScanAnalysisInput,
   VideoScanAnalysisInputSchema,
   VideoScanAnalysisOutput,
   VideoScanAnalysisOutputSchema,
+  SuggestedClip,
 } from '@/lib/types';
+
+/**
+ * This is a wrapper function that is exported from the file.
+ * It is responsible for calling the Genkit flow and returning the output.
+ * @param input The input for the video scan analysis flow.
+ * @returns The output of the video scan analysis flow.
+ */
+export async function videoScanAnalysis(
+  input: VideoScanAnalysisInput
+): Promise<VideoScanAnalysisOutput> {
+  console.log('[videoScanAnalysis] Calling flow with input:', input);
+  return videoScanAnalysisFlow(input);
+}
 
 const videoScanAnalysisFlow = ai.defineFlow(
   {
@@ -34,9 +47,11 @@ const videoScanAnalysisFlow = ai.defineFlow(
     console.log('[videoScanAnalysisFlow] Simulated transcript generated.');
 
     // Step 2: Pass transcript to an LLM to get clip suggestions.
-    const { text } = await ai.generateText({
+    const { output } = await ai.generate({
       model: 'googleai/gemini-pro',
-      prompt: `You are a video content editor.
+      prompt: [
+        {
+          text: `You are a video content editor.
 Here is a transcript of the video with timestamps:
 ${simulatedTranscript}
 
@@ -55,32 +70,26 @@ Respond ONLY with valid JSON in the format:
     }
   ]
 }`,
+        },
+      ],
       config: { temperature: 0.1 },
+      output: {
+        format: 'json',
+        schema: VideoScanAnalysisOutputSchema,
+      },
     });
 
-    console.log('[videoScanAnalysisFlow] Raw model output:', text);
-    let suggestedClips: SuggestedClip[] = [];
-    try {
-      // The model sometimes wraps the JSON in ```json ... ```, so we need to strip that.
-      const cleanedText = text.replace(/^```json\s*|```\s*$/g, '');
-      const parsed = JSON.parse(cleanedText);
-      suggestedClips = parsed.suggestedClips || [];
-    } catch (e) {
-      console.error('[videoScanAnalysisFlow] Failed to parse model output:', e, 'Raw text:', text);
-      // Return an empty array on failure
-      suggestedClips = [];
+    console.log('[videoScanAnalysisFlow] Raw model output:', output);
+    if (!output) {
+      console.error('[videoScanAnalysisFlow] Model returned no output.');
+      return { suggestedClips: [] };
     }
+    
+    // The output is already parsed as JSON because of the output format option.
+    const suggestedClips = output.suggestedClips;
 
     console.log('[videoScanAnalysisFlow] Final suggested clips:', suggestedClips);
     // Validate the final output against our Zod schema.
     return VideoScanAnalysisOutputSchema.parse({ suggestedClips });
   }
 );
-
-// Export a wrapper function that calls the flow
-export async function videoScanAnalysis(
-  input: VideoScanAnalysisInput
-): Promise<VideoScanAnalysisOutput> {
-  console.log('[videoScanAnalysis] Calling flow with input:', input);
-  return videoScanAnalysisFlow(input);
-}
