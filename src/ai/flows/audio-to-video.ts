@@ -1,3 +1,4 @@
+
 'use server';
 
 /**
@@ -29,7 +30,7 @@ const audioToVideoFlow = ai.defineFlow(
     // A more advanced implementation could transcribe the audio to text first.
     // For now, we will use the audio as context for generating a representative image.
     const { media } = await ai.generate({
-      model: 'gemini-pro-vision',
+      model: 'googleai/gemini-pro-vision',
       prompt: [
         { media: { inlineData: { data: base64Audio, mimeType: input.mimeType } } },
         { text: `Based on the provided audio, generate a new image that visually represents the sound and incorporates the following prompt: ${input.prompt}` },

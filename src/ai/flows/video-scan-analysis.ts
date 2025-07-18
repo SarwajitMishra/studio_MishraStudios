@@ -42,7 +42,7 @@ async function runTranscriptOnlyFlow(
 
   // Step 2: Pass transcript to an LLM to get clip suggestions.
   const { output } = await ai.generate({
-    model: 'gemini-1.5-flash',
+    model: 'googleai/gemini-1.5-flash',
     prompt: `You are a video content editor.
 Here is a transcript of the video with timestamps:
 ${simulatedTranscript}
@@ -94,7 +94,7 @@ async function runAudioVisualFlow(
   // For premium, we would use a vision model to analyze the video frames directly.
   // This is a placeholder for a more advanced implementation.
   const { output } = await ai.generate({
-    model: 'gemini-pro-vision',
+    model: 'googleai/gemini-pro-vision',
     prompt: [
       {
         text: `Analyze this video and identify up to 5 clip-worthy moments.

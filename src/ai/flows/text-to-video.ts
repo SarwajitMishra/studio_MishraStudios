@@ -1,3 +1,4 @@
+
 'use server';
 
 /**
@@ -21,7 +22,7 @@ const textToVideoFlow = ai.defineFlow(
   },
   async input => {
     const {media} = await ai.generate({
-      model: 'gemini-pro-vision',
+      model: 'googleai/gemini-pro-vision',
       prompt: input.prompt,
       config: {
         responseModalities: ['TEXT', 'IMAGE'], // MUST provide both TEXT and IMAGE, IMAGE only won't work

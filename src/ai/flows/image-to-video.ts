@@ -1,3 +1,4 @@
+
 'use server';
 
 /**
@@ -27,7 +28,7 @@ const imageToVideoFlow = ai.defineFlow(
 
     const base64Image = await downloadFileAsBase64(input.gcsUri);
     const {media} = await ai.generate({
-      model: 'gemini-pro-vision',
+      model: 'googleai/gemini-pro-vision',
       prompt: [
         {media: { inlineData: { data: base64Image, mimeType: input.mimeType } }},
         {text: input.prompt},
