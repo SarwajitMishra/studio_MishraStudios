@@ -24,6 +24,7 @@ import {
   FileText,
   Image as ImageIcon,
   PenSquare,
+  Home,
 } from "lucide-react";
 import { UserAuthButton } from "../auth/user-auth-button";
 import { DarkModeToggle } from "../dark-mode-toggle";
@@ -75,19 +76,32 @@ export function SidebarNav() {
           <SidebarGroupLabel>Media Tools</SidebarGroupLabel>
           <SidebarMenu>
             <SidebarMenuItem>
-              <Link href="/tts" className="w-full">
+              <Link href="/media-generation" className="w-full">
                 <SidebarMenuButton
-                  tooltip="Text-to-Speech"
-                  isActive={pathname === "/tts"}
+                  tooltip="Media Generation"
+                  isActive={pathname.startsWith("/media-generation") || pathname.startsWith("/text-to-video") || pathname.startsWith("/image-to-video") || pathname.startsWith("/audio-to-video")}
                 >
-                  <BookText />
+                  <Sparkles />
                   <span className="group-data-[state=collapsed]:hidden">
-                    Text-to-Speech
+                    Media Generation
                   </span>
                 </SidebarMenuButton>
               </Link>
             </SidebarMenuItem>
             <SidebarMenuItem>
+              <Link href="/edit-background" className="w-full">
+                <SidebarMenuButton
+                  tooltip="Edit Background"
+                  isActive={pathname === "/edit-background"}
+                >
+                  <ImageIcon />
+                  <span className="group-data-[state=collapsed]:hidden">
+                    Edit Background
+                  </span>
+                </SidebarMenuButton>
+              </Link>
+            </SidebarMenuItem>
+             <SidebarMenuItem>
               <Link href="/summarizer" className="w-full">
                 <SidebarMenuButton
                   tooltip="Clip Summarizer"
@@ -101,14 +115,14 @@ export function SidebarNav() {
               </Link>
             </SidebarMenuItem>
             <SidebarMenuItem>
-              <Link href="/media-generation" className="w-full">
+              <Link href="/tts" className="w-full">
                 <SidebarMenuButton
-                  tooltip="Media Generation"
-                  isActive={pathname === "/media-generation"}
+                  tooltip="Text-to-Speech"
+                  isActive={pathname === "/tts"}
                 >
-                  <Sparkles />
+                  <BookText />
                   <span className="group-data-[state=collapsed]:hidden">
-                    Media Generation
+                    Text-to-Speech
                   </span>
                 </SidebarMenuButton>
               </Link>
@@ -119,6 +133,18 @@ export function SidebarNav() {
       <SidebarFooter>
         <SidebarSeparator />
         <div className="p-2 flex flex-col gap-2">
+           <SidebarMenu>
+             <SidebarMenuItem>
+                <Link href="/" className="w-full">
+                  <SidebarMenuButton tooltip="Landing Page">
+                    <Home />
+                    <span className="group-data-[state=collapsed]:hidden">
+                      Landing Page
+                    </span>
+                  </SidebarMenuButton>
+                </Link>
+              </SidebarMenuItem>
+           </SidebarMenu>
           <div className="group-data-[state=expanded]:hidden">
             <DarkModeToggle />
           </div>

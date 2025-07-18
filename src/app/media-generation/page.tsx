@@ -19,7 +19,6 @@ import {
   Mic,
   Sparkles,
   Type,
-  Video,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 
@@ -28,19 +27,19 @@ const tools = [
     title: "Text to Video",
     description: "Generate a video from a text prompt.",
     icon: <Type className="h-8 w-8 text-primary" />,
-    href: "/editor", // Placeholder, ideally a specific page like /text-to-video
+    href: "/text-to-video",
   },
   {
     title: "Image to Video",
     description: "Animate an image with a prompt.",
     icon: <ImageIcon className="h-8 w-8 text-primary" />,
-    href: "/editor",
+    href: "/image-to-video",
   },
   {
     title: "Audio to Video",
     description: "Create visuals for an audio file.",
     icon: <Mic className="h-8 w-8 text-primary" />,
-    href: "/editor",
+    href: "/audio-to-video",
   },
 ];
 
