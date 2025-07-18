@@ -8,6 +8,7 @@
  */
 
 import {ai} from '@/ai/genkit';
+import { googleAI } from '@genkit-ai/googleai';
 import { downloadFileAsBase64 } from '@/services/storage';
 import { EditImageBackgroundInput, EditImageBackgroundInputSchema, EditImageBackgroundOutput, EditImageBackgroundOutputSchema } from '@/lib/types';
 
@@ -28,7 +29,7 @@ const editImageBackgroundFlow = ai.defineFlow(
 
     const base64Image = await downloadFileAsBase64(input.gcsUri);
     const { media } = await ai.generate({
-      model: 'googleai/gemini-pro-vision',
+      model: googleAI.model('gemini-pro-vision'),
       prompt: [
         { media: { inlineData: { data: base64Image, mimeType: input.mimeType } } },
         { text: `Edit the image to change its background. Keep the main subject as is, but replace the background based on the following description: "${input.prompt}".` },

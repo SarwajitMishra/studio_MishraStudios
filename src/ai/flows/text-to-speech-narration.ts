@@ -1,3 +1,4 @@
+
 'use server';
 /**
  * @fileOverview Converts text to speech using Genkit and supports multi-language and regional voices.
@@ -6,6 +7,7 @@
  */
 
 import {ai} from '@/ai/genkit';
+import { googleAI } from '@genkit-ai/googleai';
 import wav from 'wav';
 import { TextToSpeechNarrationInput, TextToSpeechNarrationInputSchema, TextToSpeechNarrationOutput, TextToSpeechNarrationOutputSchema } from '@/lib/types';
 
@@ -21,7 +23,7 @@ const textToSpeechNarrationFlow = ai.defineFlow(
   },
   async (input) => {
     const {media} = await ai.generate({
-      model: 'googleai/gemini-2.5-flash-preview-tts',
+      model: googleAI.model('gemini-2.5-flash-preview-tts'),
       config: {
         responseModalities: ['AUDIO'],
         speechConfig: {

@@ -8,6 +8,7 @@
  */
 
 import {ai} from '@/ai/genkit';
+import { googleAI } from '@genkit-ai/googleai';
 import { downloadFileAsBase64 } from '@/services/storage';
 import { AudioToVideoInput, AudioToVideoInputSchema, AudioToVideoOutput, AudioToVideoOutputSchema } from '@/lib/types';
 
@@ -30,7 +31,7 @@ const audioToVideoFlow = ai.defineFlow(
     // A more advanced implementation could transcribe the audio to text first.
     // For now, we will use the audio as context for generating a representative image.
     const { media } = await ai.generate({
-      model: 'googleai/gemini-pro-vision',
+      model: googleAI.model('gemini-pro-vision'),
       prompt: [
         { media: { inlineData: { data: base64Audio, mimeType: input.mimeType } } },
         { text: `Based on the provided audio, generate a new image that visually represents the sound and incorporates the following prompt: ${input.prompt}` },

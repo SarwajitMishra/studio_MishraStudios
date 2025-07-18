@@ -8,6 +8,7 @@
  */
 
 import {ai} from '@/ai/genkit';
+import { googleAI } from '@genkit-ai/googleai';
 import { TextToVideoInput, TextToVideoInputSchema, TextToVideoOutput, TextToVideoOutputSchema } from '@/lib/types';
 
 export async function textToVideo(input: TextToVideoInput): Promise<TextToVideoOutput> {
@@ -22,7 +23,7 @@ const textToVideoFlow = ai.defineFlow(
   },
   async input => {
     const {media} = await ai.generate({
-      model: 'googleai/gemini-pro-vision',
+      model: googleAI.model('gemini-pro-vision'),
       prompt: input.prompt,
       config: {
         responseModalities: ['TEXT', 'IMAGE'], // MUST provide both TEXT and IMAGE, IMAGE only won't work

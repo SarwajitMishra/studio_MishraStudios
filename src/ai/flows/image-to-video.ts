@@ -8,6 +8,7 @@
  */
 
 import {ai} from '@/ai/genkit';
+import { googleAI } from '@genkit-ai/googleai';
 import { downloadFileAsBase64 } from '@/services/storage';
 import { ImageToVideoInput, ImageToVideoInputSchema, ImageToVideoOutput, ImageToVideoOutputSchema } from '@/lib/types';
 
@@ -28,7 +29,7 @@ const imageToVideoFlow = ai.defineFlow(
 
     const base64Image = await downloadFileAsBase64(input.gcsUri);
     const {media} = await ai.generate({
-      model: 'googleai/gemini-pro-vision',
+      model: googleAI.model('gemini-pro-vision'),
       prompt: [
         {media: { inlineData: { data: base64Image, mimeType: input.mimeType } }},
         {text: input.prompt},
