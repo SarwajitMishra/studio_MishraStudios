@@ -21,8 +21,8 @@ const textToVideoFlow = ai.defineFlow(
   },
   async input => {
     const {media} = await ai.generate({
-      // IMPORTANT: ONLY the googleai/gemini-2.0-flash-preview-image-generation model is able to generate images.
-      model: 'googleai/gemini-2.0-flash-preview-image-generation',
+      // IMPORTANT: ONLY the gemini-2.0-flash-preview-image-generation model is able to generate images.
+      model: 'gemini-2.0-flash-preview-image-generation',
       prompt: input.prompt,
       config: {
         responseModalities: ['TEXT', 'IMAGE'], // MUST provide both TEXT and IMAGE, IMAGE only won't work
