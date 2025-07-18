@@ -48,7 +48,7 @@ const videoScanAnalysisFlow = ai.defineFlow(
 
     // Step 2: Pass transcript to an LLM to get clip suggestions.
     const { output } = await ai.generate({
-      model: 'googleai/gemini-pro',
+      model: 'gemini-pro',
       prompt: [
         {
           text: `You are a video content editor.
