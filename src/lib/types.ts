@@ -211,6 +211,10 @@ export const VideoScanAnalysisInputSchema = z.object({
   mimeType: z
     .string()
     .describe("The MIME type of the video file (e.g., video/mp4)"),
+  plan: z
+    .enum(['freemium', 'premium'])
+    .optional()
+    .describe('The user plan to determine which pipeline to use.'),
 });
 export type VideoScanAnalysisInput = z.infer<typeof VideoScanAnalysisInputSchema>;
 export const VideoScanAnalysisOutputSchema = z.object({

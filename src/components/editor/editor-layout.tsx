@@ -78,9 +78,11 @@ export function EditorLayout() {
 
           try {
             console.log(`[EditorLayout] Calling videoScanAnalysis with gcsUri: ${gcsUri}, mimeType: ${file.type}`);
+            // For now we default to 'freemium'. This could be dynamic based on user auth.
             const { suggestedClips } = await videoScanAnalysis({
               gcsUri,
               mimeType: file.type,
+              plan: 'freemium',
             });
             setSuggestedClips(suggestedClips);
             if (suggestedClips.length > 0) {
