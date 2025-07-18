@@ -1,3 +1,4 @@
+
 'use server';
 
 import { ai } from '@/ai/genkit';
@@ -34,7 +35,7 @@ const videoScanAnalysisFlow = ai.defineFlow(
 
     // Step 2: Pass transcript to an LLM to get clip suggestions.
     const { text } = await ai.generate({
-      model: 'gemini-pro',
+      model: 'googleai/gemini-pro',
       prompt: `You are a video content editor.
 Here is a transcript of the video with timestamps:
 ${simulatedTranscript}
