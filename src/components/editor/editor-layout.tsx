@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useRef, useState } from "react";
@@ -76,10 +77,12 @@ export function EditorLayout() {
           setLoadingMessage("Analyzing video...");
 
           try {
+            console.log(`[EditorLayout] Calling videoScanAnalysis with gcsUri: ${gcsUri}, mimeType: ${file.type}`);
             const { suggestedClips } = await videoScanAnalysis({
               gcsUri,
               mimeType: file.type,
             });
+            console.log(`[EditorLayout] Received suggested clips:`, suggestedClips);
             setSuggestedClips(suggestedClips);
             if (suggestedClips.length > 0) {
                 setActiveClip(suggestedClips[0]);
@@ -89,7 +92,7 @@ export function EditorLayout() {
               description: "Suggested clips are ready below.",
             });
           } catch (analysisError) {
-             console.error("Video analysis failed:", analysisError);
+             console.error("[EditorLayout] Video analysis failed:", analysisError);
              toast({
               title: "Analysis Failed",
               description: analysisError instanceof Error ? analysisError.message : "Could not analyze video.",

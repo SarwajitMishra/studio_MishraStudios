@@ -15,7 +15,7 @@ const clientEmail = process.env.GCS_CLIENT_EMAIL;
 if (!projectId || !bucketName || !privateKey || !clientEmail) {
   let missingVars = [];
   if (!projectId) missingVars.push("GOOGLE_CLOUD_PROJECT_ID or NEXT_PUBLIC_FIREBASE_PROJECT_ID");
-  if (!bucketName) missingVars.push("GCS_BUCKET_NAME or NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET");
+  if (!bucketName) missingVars.push("GCS_BUCKET_NAME or NEXT_PUBLIC_FIREbase_STORAGE_BUCKET");
   if (!privateKey) missingVars.push("GCS_PRIVATE_KEY");
   if (!clientEmail) missingVars.push("GCS_CLIENT_EMAIL");
   
@@ -79,6 +79,7 @@ export async function generateV4UploadSignedUrl(fileName: string, mimeType: stri
  * @returns A promise that resolves to the Base64 encoded content of the file.
  */
 export async function downloadFileAsBase64(gcsUri: string): Promise<string> {
+    console.log(`[storage.ts] downloadFileAsBase64 called with URI: ${gcsUri}`);
     if (!gcsUri) {
         throw new Error('GCS URI is empty or undefined.');
     }
@@ -100,6 +101,7 @@ export async function downloadFileAsBase64(gcsUri: string): Promise<string> {
     try {
         const file = storage.bucket(bucketNameFromUri).file(fileName);
         const [contents] = await file.download();
+        console.log(`[storage.ts] Successfully downloaded ${fileName}. Content length: ${contents.length}`);
         return contents.toString('base64');
     } catch (error: any) {
         console.error(`GCS download failed for URI: ${gcsUri}. Error: ${error.message}`);
