@@ -23,7 +23,7 @@ const videoScanAnalysisFlow = ai.defineFlow(
     console.log('[videoScanAnalysisFlow] File downloaded successfully.');
 
     const { text } = await ai.generate({
-      model: 'googleai/gemini-pro-vision',
+      model: 'gemini-pro-vision',
       prompt: [
         {
           text: `You are an AI video analysis expert. Analyze the uploaded video and suggest up to 5 key moments. Each suggestion should include:
