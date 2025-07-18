@@ -14,7 +14,7 @@ import { Label } from "@/components/ui/label";
 import { Progress } from "@/components/ui/progress";
 import { Sidebar, SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, Zap, Image as ImageIcon, Upload, FileImage, Sparkles, Video } from "lucide-react";
+import { Loader2, Zap, Image as ImageIcon, Upload, FileImage, Video } from "lucide-react";
 
 export default function ImageToVideoPage() {
   const [gcsUri, setGcsUri] = useState<string | null>(null);
@@ -181,7 +181,7 @@ export default function ImageToVideoPage() {
                   <Label>Original Image</Label>
                   <Card className="aspect-video flex items-center justify-center bg-muted overflow-hidden">
                     {originalImageUrl ? (
-                      <Image src={originalImageUrl} alt="Original" width={640} height={360} className="object-cover w-full h-full" />
+                      <Image src={originalImageUrl} alt="Original" width={640} height={360} data-ai-hint="user uploaded image" className="object-cover w-full h-full" />
                     ) : (
                       <div className="text-center text-muted-foreground p-4">
                         <FileImage className="mx-auto h-12 w-12" />
@@ -199,7 +199,7 @@ export default function ImageToVideoPage() {
                         <p>Generating animation...</p>
                       </div>
                     ) : generatedVideoUrl ? (
-                      <Image src={generatedVideoUrl} alt="Generated Video" width={640} height={360} className="object-cover w-full h-full" />
+                      <Image src={generatedVideoUrl} alt="Generated Video" width={1280} height={720} data-ai-hint="animated nature" className="object-cover w-full h-full" />
                     ) : (
                        <div className="text-center text-muted-foreground p-4">
                         <Video className="mx-auto h-12 w-12" />

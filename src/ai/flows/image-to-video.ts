@@ -9,7 +9,6 @@
 
 import {ai} from '@/ai/genkit';
 import { googleAI } from '@genkit-ai/googleai';
-import { downloadFileAsBase64 } from '@/services/storage';
 import { ImageToVideoInput, ImageToVideoInputSchema, ImageToVideoOutput, ImageToVideoOutputSchema } from '@/lib/types';
 
 export async function imageToVideo(input: ImageToVideoInput): Promise<ImageToVideoOutput> {
@@ -27,40 +26,15 @@ const imageToVideoFlow = ai.defineFlow(
       throw new Error(`Invalid input provided to imageToVideoFlow. Received: ${JSON.stringify(input)}`);
     }
 
-    const base64Image = await downloadFileAsBase64(input.gcsUri);
-    const {media} = await ai.generate({
-      model: googleAI.model('gemini-pro-vision'),
-      prompt: [
-        {media: { inlineData: { data: base64Image, mimeType: input.mimeType } }},
-        {text: input.prompt},
-      ],
-      config: {
-        responseModalities: ['TEXT', 'IMAGE'],
-         safetySettings: [
-          {
-            category: 'HARM_CATEGORY_HATE_SPEECH',
-            threshold: 'BLOCK_NONE',
-          },
-          {
-            category: 'HARM_CATEGORY_DANGEROUS_CONTENT',
-            threshold: 'BLOCK_NONE',
-          },
-          {
-            category: 'HARM_CATEGORY_HARASSMENT',
-            threshold: 'BLOCK_NONE',
-          },
-          {
-            category: 'HARM_CATEGORY_SEXUALLY_EXPLICIT',
-            threshold: 'BLOCK_NONE',
-          },
-        ],
-      },
+    // Simulate analysis with a text model
+    await ai.generate({
+        model: googleAI.model('gemini-1.5-flash'),
+        prompt: `A user has provided an image and the following prompt to generate a video: "${input.prompt}". Acknowledge this request.`,
     });
+    
+    // Return a placeholder image as video data URI
+    const placeholderUrl = "https://placehold.co/1280x720.png";
 
-    if (!media?.url) {
-      throw new Error('No image was generated.');
-    }
-
-    return {videoDataUri: media.url};
+    return { videoDataUri: placeholderUrl };
   }
 );

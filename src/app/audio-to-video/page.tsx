@@ -200,7 +200,7 @@ export default function AudioToVideoPage() {
                       <p>Generating video...</p>
                     </div>
                   ) : generatedVideoUrl ? (
-                    <Image src={generatedVideoUrl} alt="Generated Video" width={640} height={360} className="object-cover w-full h-full" />
+                    <Image src={generatedVideoUrl} alt="Generated Video" width={1280} height={720} data-ai-hint="abstract visual" className="object-cover w-full h-full" />
                   ) : (
                       <div className="text-center text-muted-foreground p-4">
                         {originalAudioUrl ? (

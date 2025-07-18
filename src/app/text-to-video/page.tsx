@@ -104,7 +104,7 @@ export default function TextToVideoPage() {
                       <p>Generating video...</p>
                     </div>
                   ) : generatedVideo ? (
-                    <Image src={generatedVideo} alt="Generated video" width={1280} height={720} className="object-cover w-full h-full" />
+                    <Image src={generatedVideo} alt="Generated video" width={1280} height={720} data-ai-hint="lion savanna sunrise" className="object-cover w-full h-full" />
                   ) : (
                      <div className="text-center text-muted-foreground p-4">
                       <Sparkles className="mx-auto h-12 w-12" />

@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useRef, useState } from "react";
@@ -223,7 +224,7 @@ export default function EditBackgroundPage() {
                   <Label>Original</Label>
                   <Card className="aspect-square flex items-center justify-center bg-muted overflow-hidden">
                     {originalImageUrl ? (
-                      <Image src={originalImageUrl} alt="Original" width={500} height={500} className="object-cover w-full h-full" />
+                      <Image src={originalImageUrl} alt="Original" width={500} height={500} data-ai-hint="user uploaded image" className="object-cover w-full h-full" />
                     ) : (
                       <div className="text-center text-muted-foreground p-4">
                         <FileImage className="mx-auto h-12 w-12" />
@@ -241,7 +242,7 @@ export default function EditBackgroundPage() {
                         <p>Generating new background...</p>
                       </div>
                     ) : editedImageUrl ? (
-                      <Image src={editedImageUrl} alt="Edited" width={500} height={500} className="object-cover w-full h-full" />
+                      <Image src={editedImageUrl} alt="Edited" width={500} height={500} data-ai-hint="beach sunset" className="object-cover w-full h-full" />
                     ) : (
                        <div className="text-center text-muted-foreground p-4">
                         <Sparkles className="mx-auto h-12 w-12" />

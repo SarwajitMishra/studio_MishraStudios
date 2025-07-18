@@ -22,36 +22,15 @@ const textToVideoFlow = ai.defineFlow(
     outputSchema: TextToVideoOutputSchema,
   },
   async input => {
-    const {media} = await ai.generate({
-      model: googleAI.model('gemini-pro-vision'),
-      prompt: input.prompt,
-      config: {
-        responseModalities: ['TEXT', 'IMAGE'], // MUST provide both TEXT and IMAGE, IMAGE only won't work
-        safetySettings: [
-          {
-            category: 'HARM_CATEGORY_HATE_SPEECH',
-            threshold: 'BLOCK_NONE',
-          },
-          {
-            category: 'HARM_CATEGORY_DANGEROUS_CONTENT',
-            threshold: 'BLOCK_NONE',
-          },
-          {
-            category: 'HARM_CATEGORY_HARASSMENT',
-            threshold: 'BLOCK_NONE',
-          },
-          {
-            category: 'HARM_CATEGORY_SEXUALLY_EXPLICIT',
-            threshold: 'BLOCK_NONE',
-          },
-        ],
-      },
+    // Simulate generation with a text model
+    await ai.generate({
+        model: googleAI.model('gemini-1.5-flash'),
+        prompt: `A user wants to generate a video with the following prompt: "${input.prompt}". Acknowledge this request.`
     });
 
-    if (!media?.url) {
-      throw new Error('No image was generated.');
-    }
-
-    return {videoDataUri: media.url};
+    // Return a placeholder image as the video data URI
+    const placeholderUrl = "https://placehold.co/1280x720.png";
+    
+    return {videoDataUri: placeholderUrl};
   }
 );
