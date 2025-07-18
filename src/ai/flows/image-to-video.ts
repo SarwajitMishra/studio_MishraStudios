@@ -28,7 +28,7 @@ const imageToVideoFlow = ai.defineFlow(
 
     // Simulate analysis with a text model
     await ai.generate({
-        model: googleAI.model('gemini-pro'),
+        model: 'gemini-pro',
         prompt: `A user has provided an image and the following prompt to generate a video: "${input.prompt}". Acknowledge this request.`,
     });
     

@@ -28,7 +28,7 @@ const editImageBackgroundFlow = ai.defineFlow(
     
     // Simulate analysis with a text model
     await ai.generate({
-        model: googleAI.model('gemini-pro'),
+        model: 'gemini-pro',
         prompt: `A user wants to edit an image with the following prompt: "${input.prompt}". Acknowledge this request.`,
     });
 
