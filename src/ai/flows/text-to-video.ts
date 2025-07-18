@@ -1,7 +1,7 @@
 'use server';
 
 /**
- * @fileOverview Text-to-Video flow using Gemini 2.0 Flash image generation.
+ * @fileOverview Text-to-Video flow using Gemini Pro Vision for image generation.
  *
  * - textToVideo - A function that generates a video from a text prompt.
  */
@@ -21,8 +21,7 @@ const textToVideoFlow = ai.defineFlow(
   },
   async input => {
     const {media} = await ai.generate({
-      // IMPORTANT: ONLY the googleai/gemini-2.0-flash-preview-image-generation model is able to generate images.
-      model: 'googleai/gemini-2.0-flash-preview-image-generation',
+      model: 'gemini-pro-vision',
       prompt: input.prompt,
       config: {
         responseModalities: ['TEXT', 'IMAGE'], // MUST provide both TEXT and IMAGE, IMAGE only won't work

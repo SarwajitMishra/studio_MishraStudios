@@ -27,7 +27,7 @@ const promptToVideoFlow = ai.defineFlow(
 
     const base64Video = await downloadFileAsBase64(input.gcsUri);
     const { media } = await ai.generate({
-      model: 'googleai/gemini-2.0-flash-preview-image-generation',
+      model: 'gemini-pro-vision',
       prompt: [
         { media: { inlineData: { data: base64Video, mimeType: input.mimeType } } },
         { text: `Based on the provided video, generate a new image that matches this style and incorporates the following prompt: ${input.prompt}` },
