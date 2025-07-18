@@ -47,10 +47,8 @@ const videoScanAnalysisFlow = ai.defineFlow(
 
     // Step 2: Pass transcript to an LLM to get clip suggestions.
     const { output } = await ai.generate({
-      model: 'googleai/gemini-1.5-flash-latest',
-      prompt: [
-        {
-          text: `You are a video content editor.
+      model: 'gemini-1.5-flash-latest',
+      prompt: `You are a video content editor.
 Here is a transcript of the video with timestamps:
 ${simulatedTranscript}
 
@@ -59,18 +57,16 @@ From the transcript, extract up to 5 interesting segments worth clipping. For ea
 - endTime in seconds
 - short description of why it's important
 
-Respond ONLY with valid JSON in the format:
+Respond ONLY with valid JSON that conforms to this Zod schema:
 {
   "suggestedClips": [
     {
-      "description": "Intro to the video topic",
-      "startTime": 12,
-      "endTime": 28
+      "description": "string",
+      "startTime": "number",
+      "endTime": "number"
     }
   ]
 }`,
-        },
-      ],
       config: { temperature: 0.1 },
       output: {
         format: 'json',
