@@ -27,7 +27,7 @@ const editImageBackgroundFlow = ai.defineFlow(
 
     const base64Image = await downloadFileAsBase64(input.gcsUri);
     const { media } = await ai.generate({
-      model: 'gemini-2.0-flash-preview-image-generation',
+      model: 'googleai/gemini-2.0-flash-preview-image-generation',
       prompt: [
         { media: { inlineData: { data: base64Image, mimeType: input.mimeType } } },
         { text: `Edit the image to change its background. Keep the main subject as is, but replace the background based on the following description: "${input.prompt}".` },
