@@ -5,10 +5,7 @@ import { downloadFileAsBase64 } from '@/services/storage';
 import { ai } from '@/ai/genkit';
 import { VideoScanAnalysisInput, VideoScanAnalysisInputSchema, VideoScanAnalysisOutput, VideoScanAnalysisOutputSchema } from '@/lib/types';
 
-console.log('[video-scan-analysis.ts] Module loaded.');
-
 export async function videoScanAnalysis(input: VideoScanAnalysisInput): Promise<VideoScanAnalysisOutput> {
-  console.log('[videoScanAnalysis] Function called. Running flow with input:', input);
   // Use ai.run to ensure proper Genkit instrumentation
   return await ai.run(
     {
@@ -17,7 +14,6 @@ export async function videoScanAnalysis(input: VideoScanAnalysisInput): Promise<
       outputSchema: VideoScanAnalysisOutputSchema,
     },
     async (flowInput) => {
-      console.log('[videoScanAnalysisFlow] Flow started with input:', flowInput);
       if (!flowInput?.gcsUri || !flowInput?.mimeType?.startsWith('video/')) {
         throw new Error(`Invalid input: ${JSON.stringify(flowInput)}`);
       }
@@ -59,12 +55,9 @@ Respond ONLY with valid JSON in the format:
         },
       });
 
-      console.log('[videoScanAnalysisFlow] Raw model output text:', text);
-
       try {
         // The model returns a string, so we need to parse it as JSON.
         const parsedOutput = JSON.parse(text);
-        console.log('[videoScanAnalysisFlow] Successfully parsed JSON:', parsedOutput);
         // Validate the parsed output against our Zod schema.
         return VideoScanAnalysisOutputSchema.parse(parsedOutput);
       } catch (e) {

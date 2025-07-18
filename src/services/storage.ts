@@ -79,7 +79,6 @@ export async function generateV4UploadSignedUrl(fileName: string, mimeType: stri
  * @returns A promise that resolves to the Base64 encoded content of the file.
  */
 export async function downloadFileAsBase64(gcsUri: string): Promise<string> {
-    console.log(`[storage.ts] downloadFileAsBase64 called with URI: ${gcsUri}`);
     if (!gcsUri) {
         throw new Error('GCS URI is empty or undefined.');
     }
@@ -101,7 +100,6 @@ export async function downloadFileAsBase64(gcsUri: string): Promise<string> {
     try {
         const file = storage.bucket(bucketNameFromUri).file(fileName);
         const [contents] = await file.download();
-        console.log(`[storage.ts] Successfully downloaded ${fileName}. Content length: ${contents.length}`);
         return contents.toString('base64');
     } catch (error: any) {
         console.error(`GCS download failed for URI: ${gcsUri}. Error: ${error.message}`);
