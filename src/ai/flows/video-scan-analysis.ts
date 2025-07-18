@@ -3,10 +3,12 @@
 
 import { downloadFileAsBase64 } from '@/services/storage';
 import { ai } from '@/ai/genkit';
+import { runFlow } from 'genkit/flow';
 import { VideoScanAnalysisInput, VideoScanAnalysisInputSchema, VideoScanAnalysisOutput, VideoScanAnalysisOutputSchema } from '@/lib/types';
 
 export async function videoScanAnalysis(input: VideoScanAnalysisInput): Promise<VideoScanAnalysisOutput> {
-  return videoScanAnalysisFlow(input);
+  // Use runFlow to ensure proper Genkit instrumentation
+  return runFlow(videoScanAnalysisFlow, input);
 }
 
 const videoScanAnalysisFlow = ai.defineFlow(
@@ -23,7 +25,7 @@ const videoScanAnalysisFlow = ai.defineFlow(
     // Download video from GCS and convert to base64
     const videoBase64 = await downloadFileAsBase64(input.gcsUri);
 
-    const { output } = await ai.generate({
+    const { text } = await ai.generate({
       model: 'googleai/gemini-pro-vision',
       prompt: [
         {
@@ -32,7 +34,7 @@ const videoScanAnalysisFlow = ai.defineFlow(
 - endTime (in seconds)
 - description (short)
 
-Respond ONLY in this JSON format:
+Respond ONLY with valid JSON in the format:
 {
   "suggestedClips": [
     {
@@ -46,15 +48,26 @@ Respond ONLY in this JSON format:
         {
           media: {
             url: `data:${input.mimeType};base64,${videoBase64}`,
-            contentType: input.mimeType
+            contentType: input.mimeType,
           },
         },
       ],
-      output: {
-        schema: VideoScanAnalysisOutputSchema,
+      config: {
+        // Higher temperature for more creative/varied descriptions.
+        // Keep it reasonable to avoid nonsensical output.
+        temperature: 0.3,
       },
     });
 
-    return output!;
+    try {
+      // The model returns a string, so we need to parse it as JSON.
+      const parsedOutput = JSON.parse(text);
+      // Validate the parsed output against our Zod schema.
+      return VideoScanAnalysisOutputSchema.parse(parsedOutput);
+    } catch (e) {
+      console.error('Failed to parse model output as JSON:', e);
+      console.error('Raw model output:', text);
+      throw new Error('The AI model returned an invalid response. Please try again.');
+    }
   }
 );
