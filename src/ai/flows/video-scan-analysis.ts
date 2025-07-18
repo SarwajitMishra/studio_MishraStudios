@@ -47,7 +47,7 @@ const videoScanAnalysisFlow = ai.defineFlow(
 
     // Step 2: Pass transcript to an LLM to get clip suggestions.
     const { output } = await ai.generate({
-      model: 'gemini-1.5-flash-latest',
+      model: 'gemini-1.5-flash',
       prompt: `You are a video content editor.
 Here is a transcript of the video with timestamps:
 ${simulatedTranscript}
