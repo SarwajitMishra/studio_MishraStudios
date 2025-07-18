@@ -5,11 +5,6 @@ import { downloadFileAsBase64 } from '@/services/storage';
 import { ai } from '@/ai/genkit';
 import { VideoScanAnalysisInput, VideoScanAnalysisInputSchema, VideoScanAnalysisOutput, VideoScanAnalysisOutputSchema } from '@/lib/types';
 
-export async function videoScanAnalysis(input: VideoScanAnalysisInput): Promise<VideoScanAnalysisOutput> {
-  // Use ai.run to ensure proper Genkit instrumentation
-  return await ai.run(videoScanAnalysisFlow, input);
-}
-
 const videoScanAnalysisFlow = ai.defineFlow(
   {
     name: 'videoScanAnalysisFlow',
@@ -70,3 +65,8 @@ Respond ONLY with valid JSON in the format:
     }
   }
 );
+
+export async function videoScanAnalysis(input: VideoScanAnalysisInput): Promise<VideoScanAnalysisOutput> {
+  // Use ai.run to ensure proper Genkit instrumentation
+  return await ai.run(videoScanAnalysisFlow, input);
+}
