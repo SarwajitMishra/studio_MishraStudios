@@ -6,10 +6,8 @@ import { googleAI } from '@genkit-ai/googleai';
 import {
   VideoScanAnalysisInput,
   VideoScanAnalysisInputSchema,
-  VideoScanAnalysisOutput,
-  VideoScanAnalysisOutputSchema,
+  VideoScanAnalysisOutput, VideoScanAnalysisOutputSchema
 } from '@/lib/types';
-import { z } from 'zod';
 
 /**
  * This is a wrapper function that is exported from the file.

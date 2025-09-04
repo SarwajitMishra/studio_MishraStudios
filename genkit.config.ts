@@ -1,12 +1,13 @@
-
-import {googleAI} from '@genkit-ai/googleai';
-import {defineConfig} from 'genkit';
+import { defineConfig } from '@genkit-ai/core';
+import { googleAI } from '@genkit-ai/googleai';
 
 export default defineConfig({
   plugins: [
-    googleAI({
-      // The API key is read from the GOOGLE_API_KEY environment variable.
-    }),
+ googleAI({
+ models: [
+ { name: 'gemini-pro' },
+ ],
+ }),
   ],
   logLevel: 'debug',
   enableTracingAndMetrics: true,
